@@ -52,7 +52,6 @@ header h1{
   padding:30px;
 }
 
-/* CARD */
 .card{
   width:230px;
   height:210px;
@@ -90,26 +89,25 @@ header h1{
   z-index:2;
 }
 
-/* 🎮 LOADING (FIXED) */
+/* ⭕ LOADING FIXED */
 #loading{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,0.95);
+  background:rgba(0,0,0,0.98);
   display:none;
   justify-content:center;
   align-items:center;
   flex-direction:column;
-  z-index:9999; /* IMPORTANT FIX */
+  z-index:999999; /* IMPORTANT */
 }
 
 .spinner{
-  width:70px;
-  height:70px;
-  border:6px solid #333;
-  border-top:6px solid #00ffcc;
+  width:80px;
+  height:80px;
+  border:7px solid #333;
+  border-top:7px solid #00ffcc;
   border-radius:50%;
   animation:spin 1s linear infinite;
-  margin-bottom:15px;
 }
 
 @keyframes spin{
@@ -117,18 +115,18 @@ header h1{
 }
 
 #loadingText{
+  margin-top:15px;
   color:#00ffcc;
-  font-size:18px;
 }
 
-/* GAME SCREEN */
+/* GAME */
 #gameScreen{
   position:fixed;
   inset:0;
   display:none;
   flex-direction:column;
   background:black;
-  z-index:50;
+  z-index:10;
 }
 
 #topbar{
@@ -136,19 +134,9 @@ header h1{
   padding:10px;
   display:flex;
   justify-content:space-between;
-  align-items:center;
 }
 
-button{
-  padding:8px 14px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  background:#00ffcc;
-  font-weight:bold;
-}
-
-/* 🎵 MUSIC BUTTON */
+/* 🎧 MUSIC BUTTON LOCKED STYLE */
 #musicBtn{
   position:fixed;
   bottom:15px;
@@ -195,14 +183,14 @@ button{
 
 </div>
 
-<!-- 🎧 MUSIC -->
-<audio id="music" loop>
+<!-- 🎧 AUDIO (LOCKED CONTROL) -->
+<audio id="music" loop preload="auto">
   <source src="elevator.mp3" type="audio/mpeg">
 </audio>
 
 <button id="musicBtn" onclick="toggleMusic()">🎵 Music</button>
 
-<!-- ⭕ LOADING SCREEN -->
+<!-- ⭕ LOADING -->
 <div id="loading">
   <div class="spinner"></div>
   <div id="loadingText">Loading game...</div>
@@ -220,24 +208,23 @@ button{
 <script>
 
 const music = document.getElementById("music");
-let musicPlaying = false;
 
-/* 🎧 MUSIC (safe + toggle) */
+/* 🔒 HARD LOCK MUSIC STATE */
+let musicState = false;
+
 function toggleMusic(){
-  if(music.paused){
-    music.play().then(()=>musicPlaying=true);
+  musicState = !musicState;
+
+  if(musicState){
+    music.play().catch(()=>{musicState=false;});
   }else{
     music.pause();
-    musicPlaying=false;
   }
 }
 
-/* auto attempt (browser-safe) */
-document.addEventListener("click", ()=>{
-  if(!musicPlaying){
-    music.play().catch(()=>{});
-    musicPlaying=true;
-  }
+/* prevent weird auto pause behavior */
+document.addEventListener("visibilitychange", ()=>{
+  if(document.hidden) return;
 });
 
 /* 🎮 OPEN GAME */
@@ -256,10 +243,10 @@ function openGame(file,title){
     document.getElementById("frame").src=file;
     document.getElementById("title").innerText=title;
 
-  },900);
+  },1000);
 }
 
-/* ⬅ CLOSE */
+/* CLOSE */
 function closeGame(){
   document.getElementById("gameScreen").style.display="none";
   document.querySelector(".hub").style.display="flex";
