@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Cross Sums</title>
+
+<style>
+body {
+  margin: 0;
+  background: radial-gradient(circle at top, #1a1f2e, #0f1115);
+  font-family: Arial, sans-serif;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* HEADER */
+h1 {
+  margin: 18px 0 5px;
+  font-size: 26px;
+  letter-spacing: 1px;
+}
+
+/* TOP BAR */
+#topbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.panel {
+  background: rgba(255,255,255,0.06);
+  padding: 8px 14px;
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+  font-size: 14px;
+}
+
+/* BUTTONS */
+button {
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  border: none;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+/* BOARD */
+#board {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+/* CELLS */
+.cell {
+  width: 72px;
+  height: 72px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  border-radius: 14px;
+  cursor: pointer;
+  user-select: none;
+  transition: 0.2s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* cross-out animation */
+.cell.off {
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.25);
+  text-decoration: line-through;
+  transform: scale(0.9) rotate(-2deg);
+  opacity: 0.6;
+}
+
+/* SUM CELLS */
+.sum {
+  background: rgba(241,196,15,0.12);
+  border: 1px solid rgba(241,196,15,0.4);
+  color: #f1c40f;
+  font-weight: bold;
+  cursor: default;
+  font-size: 14px;
+}
+
+/* STATUS */
+#status {
+  margin-top: 12px;
+  font-size: 18px;
+  color: #2ecc71;
+  height: 24px;
+}
+
+/* TIMER POP STYLE */
+#time {
+  font-weight: bold;
+  color: #00e6ff;
+}
+
+/* HINT HIGHLIGHT */
+.hint {
+  box-shadow: 0 0 18px #00ff88;
+  border: 2px solid #00ff88;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🧠 Cross Sums</h1>
+
+<div id="topbar">
+  <div class="panel">⏱ <span id="time">0</span>s</div>
+  <button onclick="hint()">💡 Hint</button>
+  <button onclick="newPuzzle()">🔄 New</button>
+</div>
+
+<div id="board"></div>
+<div id="status"></div>
+
+<script>
+
+const size = 4;
+
+let grid, mask, targets, state;
+let usedHint = false;
+let timer = 0;
+let interval;
+
+const board = document.getElementById("board");
+const status = document.getElementById("status");
+const timeEl = document.getElementById("time");
+
+/* RANDOM GENERATOR */
+function rand(min,max){
+  return Math.floor(Math.random()*(max-min+1))+min;
+}
+
+function generate(){
+  grid = [];
+  mask = [];
+  state = {};
+
+  // STEP 1: structured grid (not pure random chaos)
+  // we bias values so puzzles feel logical
+  for(let r=0;r<size;r++){
+    let row=[];
+    for(let c=0;c<size;c++){
+      let base = (r+c) % 2 === 0 ? rand(2,7) : rand(1,9);
+      row.push(base);
+    }
+    grid.push(row);
+  }
+
+  // STEP 2: smart mask (balanced per row/col)
+  mask = Array.from({length:size}, ()=>Array(size).fill(0));
+
+  for(let r=0;r<size;r++){
+    let picks = 0;
+
+    for(let c=0;c<size;c++){
+      let keepChance = 0.55;
+
+      // avoid empty rows/cols
+      if(picks === 0 && c === size-1) keepChance = 1;
+
+      // bias: avoid too many picks
+      if(picks >= 3) keepChance = 0.25;
+
+      if(Math.random() < keepChance){
+        mask[r][c] = 1;
+        picks++;
+      }
+    }
+  }
+
+  // STEP 3: ensure no empty columns
+  for(let c=0;c<size;c++){
+    let has = false;
+    for(let r=0;r<size;r++){
+      if(mask[r][c]) has = true;
+    }
+    if(!has){
+      let r = rand(0,size-1);
+      mask[r][c] = 1;
+    }
+  }
+
+  // STEP 4: compute targets
+  let rowT=[], colT=[];
+
+  for(let r=0;r<size;r++){
+    let sum=0;
+    for(let c=0;c<size;c++){
+      if(mask[r][c]) sum += grid[r][c];
+    }
+    rowT.push(sum);
+  }
+
+  for(let c=0;c<size;c++){
+    let sum=0;
+    for(let r=0;r<size;r++){
+      if(mask[r][c]) sum += grid[r][c];
+    }
+    colT.push(sum);
+  }
+
+  targets = {row:rowT, col:colT};
+}
+/* BUILD UI */
+function build(){
+  board.innerHTML = "";
+  board.style.gridTemplateColumns = `repeat(${size + 1}, 72px)`;
+
+  for(let r=0;r<size;r++){
+    for(let c=0;c<size;c++){
+
+      const cell = document.createElement("div");
+      const key = r+","+c;
+
+      state[key] = true;
+
+      cell.className = "cell";
+      cell.innerText = grid[r][c];
+
+      cell.onclick = () => {
+        state[key] = !state[key];
+        cell.classList.toggle("off");
+        check();
+      };
+
+      board.appendChild(cell);
+    }
+
+    const sum = document.createElement("div");
+    sum.className = "cell sum";
+    sum.innerText = targets.row[r];
+    board.appendChild(sum);
+  }
+
+  for(let c=0;c<size;c++){
+    const sum = document.createElement("div");
+    sum.className = "cell sum";
+    sum.innerText = targets.col[c];
+    board.appendChild(sum);
+  }
+
+  board.appendChild(document.createElement("div"));
+}
+
+/* CHECK WIN */
+function check(){
+  let ok=true;
+
+  for(let r=0;r<size;r++){
+    let sum=0;
+    for(let c=0;c<size;c++){
+      if(state[r+","+c]) sum += grid[r][c];
+    }
+    if(sum !== targets.row[r]) ok=false;
+  }
+
+  for(let c=0;c<size;c++){
+    let sum=0;
+    for(let r=0;r<size;r++){
+      if(state[r+","+c]) sum += grid[r][c];
+    }
+    if(sum !== targets.col[c]) ok=false;
+  }
+
+  status.innerText = ok ? "🎉 SOLVED!" : "";
+}
+
+/* TIMER */
+function startTimer(){
+  clearInterval(interval);
+  timer=0;
+  timeEl.innerText=0;
+
+  interval=setInterval(()=>{
+    timer++;
+    timeEl.innerText=timer;
+  },1000);
+}
+
+/* HINT */
+function hint(){
+  if(usedHint) return;
+
+  for(let r=0;r<size;r++){
+    for(let c=0;c<size;c++){
+      if(mask[r][c]){
+        const idx = r*size + c;
+        const cell = board.children[idx];
+        cell.classList.add("hint");
+        usedHint=true;
+        return;
+      }
+    }
+  }
+}
+
+/* NEW GAME */
+function newPuzzle(){
+  usedHint=false;
+  status.innerText="";
+
+  generate();
+  build();
+  startTimer();
+}
+
+newPuzzle();
+
+</script>
+
+</body>
+</html>

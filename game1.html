@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chess vs Bot (Difficulty System)</title>
+<style>
+body{
+  margin:0;
+  font-family:Arial;
+  background:#1e1e1e;
+  color:white;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
+}
+#top{
+  margin-bottom:10px;
+  display:flex;
+  gap:15px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+button, select{
+  padding:6px 10px;
+  border:none;
+  border-radius:6px;
+  font-weight:bold;
+}
+button{background:#4caf50;color:white;cursor:pointer;}
+select{background:#333;color:white;}
+#status{
+  margin-left:10px;
+  color:#ffd54a;
+  font-weight:bold;
+}
+#game{
+  display:grid;
+  grid-template-columns: repeat(8, 70px);
+  grid-template-rows: repeat(8, 70px);
+  border:4px solid #444;
+}
+.square{
+  width:70px;
+  height:70px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:34px;
+  cursor:pointer;
+}
+.whiteSq{background:#f0d9b5;color:black;}
+.blackSq{background:#b58863;color:black;}
+.selected{outline:3px solid yellow;}
+
+#modal{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.7);
+  display:none;
+  align-items:center;
+  justify-content:center;
+}
+#modalBox{
+  background:#222;
+  padding:20px;
+  border-radius:10px;
+  text-align:center;
+}
+#modalBox button{
+  margin:6px;
+  padding:10px;
+  font-size:18px;
+}
+</style>
+</head>
+<body>
+
+<div id="top">
+  <div>♙ White: <span id="wCount"></span> | ⏱ <span id="wTime"></span></div>
+  <div>♟ Black: <span id="bCount"></span> | ⏱ <span id="bTime"></span></div>
+
+  <select id="diff" onchange="setDifficulty()">
+    <option value="easy">🟢 Easy</option>
+    <option value="medium">🟡 Medium</option>
+    <option value="hard">🔴 Hard</option>
+  </select>
+
+  <button onclick="restartGame()">Restart</button>
+  <span id="status"></span>
+</div>
+
+<div id="game"></div>
+
+<div id="modal">
+  <div id="modalBox">
+    <h2 id="modalText"></h2>
+    <div id="promo" style="display:none">
+      <button onclick="promote('Q')">♕ Queen</button>
+      <button onclick="promote('R')">♖ Rook</button>
+      <button onclick="promote('B')">♗ Bishop</button>
+      <button onclick="promote('N')">♘ Knight</button>
+    </div>
+    <button onclick="restartGame()" id="againBtn" style="display:none">Play Again</button>
+  </div>
+</div>
+
+<script>
+const game=document.getElementById("game");
+const wCountEl=document.getElementById("wCount");
+const bCountEl=document.getElementById("bCount");
+const wTimeEl=document.getElementById("wTime");
+const bTimeEl=document.getElementById("bTime");
+const modal=document.getElementById("modal");
+const modalText=document.getElementById("modalText");
+const promo=document.getElementById("promo");
+const againBtn=document.getElementById("againBtn");
+const statusEl=document.getElementById("status");
+
+let difficulty="easy";
+function setDifficulty(){
+  difficulty=document.getElementById("diff").value;
+}
+
+const P={p:"♟",r:"♜",n:"♞",b:"♝",q:"♛",k:"♚",P:"♙",R:"♖",N:"♘",B:"♗",Q:"♕",K:"♔"};
+
+let board,selected=null,turn="white",legalMoves=[],gameOver=false;
+let botThinking=false,promotionActive=false,pendingPromotion=null;
+
+let whiteTime=300,blackTime=300;
+
+setInterval(()=>{
+  if(gameOver||promotionActive) return;
+  if(turn=="white") whiteTime--;
+  else blackTime--;
+
+  if(whiteTime<=0){gameOver=true;showModal("💀 Black wins on time!");}
+  if(blackTime<=0){gameOver=true;showModal("🎉 White wins on time!");}
+
+  draw();
+},1000);
+
+function format(t){return Math.floor(t/60)+":"+(t%60<10?"0":"")+(t%60);}
+
+function initBoard(){
+  return [
+    ["r","n","b","q","k","b","n","r"],
+    ["p","p","p","p","p","p","p","p"],
+    ["","","","","","","",""],
+    ["","","","","","","",""],
+    ["","","","","","","",""],
+    ["","","","","","","",""],
+    ["P","P","P","P","P","P","P","P"],
+    ["R","N","B","Q","K","B","N","R"]
+  ];
+}
+
+function restartGame(){
+  board=initBoard();
+  selected=null;legalMoves=[];
+  turn="white";gameOver=false;
+  botThinking=false;promotionActive=false;
+  pendingPromotion=null;
+  whiteTime=300;blackTime=300;
+  modal.style.display="none";
+  draw();
+}
+
+function showModal(t,showPromo=false){
+  modalText.textContent=t;
+  promo.style.display=showPromo?"block":"none";
+  againBtn.style.display=showPromo?"none":"block";
+  modal.style.display="flex";
+}
+
+function promote(p){
+  let {x,y}=pendingPromotion;
+  board[y][x]=p;
+  pendingPromotion=null;
+  promotionActive=false;
+  modal.style.display="none";
+
+  turn="black";
+  botThinking=true;
+  setTimeout(botMove,1200+Math.random()*800);
+  draw();
+}
+
+function inside(x,y){return x>=0&&x<8&&y>=0&&y<8;}
+function isEnemy(p,w){if(!p)return true;return w?p===p.toLowerCase():p===p.toUpperCase();}
+function clone(b){return b.map(r=>r.slice());}
+function findKing(b,w){let k=w?"K":"k";for(let y=0;y<8;y++)for(let x=0;x<8;x++)if(b[y][x]===k)return{x,y};}
+
+function isCheck(b,w){
+  let k=findKing(b,w);
+  for(let y=0;y<8;y++)for(let x=0;x<8;x++){
+    let p=b[y][x];if(!p)continue;
+    if(w&&p===p.toUpperCase())continue;
+    if(!w&&p===p.toLowerCase())continue;
+    let m=getMovesRaw(b,x,y,!w,false);
+    if(m.some(v=>v.x===k.x&&v.y===k.y))return true;
+  }
+  return false;
+}
+
+function safeMove(x1,y1,x2,y2,w){
+  let c=clone(board);
+  c[y2][x2]=c[y1][x1];c[y1][x1]="";
+  return !isCheck(c,w);
+}
+
+function getMovesRaw(b,x,y,w,f){
+  let p=b[y][x];if(!p)return[];
+  let m=[];
+
+  const add=(nx,ny)=>{
+    if(!inside(nx,ny))return;
+    let t=b[ny][nx];
+    if(!t||isEnemy(t,w))if(!f||safeMove(x,y,nx,ny,w))m.push({x:nx,y:ny});
+  };
+
+  function slide(d){for(let v of d){let nx=x+v[0],ny=y+v[1];while(inside(nx,ny)){let t=b[ny][nx];if(!t){if(!f||safeMove(x,y,nx,ny,w))m.push({x:nx,y:ny});}else{if(isEnemy(t,w)&&(!f||safeMove(x,y,nx,ny,w)))m.push({x:nx,y:ny});break;}nx+=v[0];ny+=v[1];}}}
+
+  switch(p.toLowerCase()){
+    case"p":if(w){if(!b[y-1]?.[x])add(x,y-1);if(y===6&&!b[y-2][x])add(x,y-2);if(b[y-1]?.[x-1])add(x-1,y-1);if(b[y-1]?.[x+1])add(x+1,y-1);}else{if(!b[y+1]?.[x])add(x,y+1);if(y===1&&!b[y+2][x])add(x,y+2);if(b[y+1]?.[x-1])add(x-1,y+1);if(b[y+1]?.[x+1])add(x+1,y+1);}break;
+    case"r":slide([[1,0],[-1,0],[0,1],[0,-1]]);break;
+    case"b":slide([[1,1],[1,-1],[-1,1],[-1,-1]]);break;
+    case"q":slide([[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]);break;
+    case"n":[[1,2],[2,1],[-1,2],[-2,1],[1,-2],[2,-1],[-1,-2],[-2,-1]].forEach(v=>add(x+v[0],y+v[1]));break;
+    case"k":for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)if(dx||dy)add(x+dx,y+dy);break;
+  }
+
+  return m;
+}
+
+function getMoves(x,y,w){return getMovesRaw(board,x,y,w,true);}
+
+function movePiece(x1,y1,x2,y2){
+  let p=board[y1][x1];board[y2][x2]=p;board[y1][x1]="";
+  if(p==="P"&&y2===0){promotionActive=true;pendingPromotion={x:x2,y:y2};showModal("Choose promotion",true);}
+}
+
+// 🤖 DIFFICULTY BOT
+function botMove(){
+  if(gameOver||promotionActive)return;
+
+  let moves=[];
+  for(let y=0;y<8;y++)for(let x=0;x<8;x++){
+    let p=board[y][x];
+    if(p&&p===p.toLowerCase()){
+      getMoves(x,y,false).forEach(m=>moves.push({x1:x,y1:y,x2:m.x,y2:m.y}));
+    }
+  }
+
+  if(!moves.length)return;
+
+  let move;
+
+  if(difficulty==="easy"){
+    move=moves[Math.floor(Math.random()*moves.length)];
+  }
+
+  if(difficulty==="medium"){
+    let caps=moves.filter(m=>board[m.y2][m.x2]!="");
+    move=(Math.random()<0.6&&caps.length)?caps[Math.floor(Math.random()*caps.length)]:moves[Math.floor(Math.random()*moves.length)];
+  }
+
+  if(difficulty==="hard"){
+    let best=moves[0],bestScore=-999;
+    for(let m of moves){
+      let score=board[m.y2][m.x2]?10:0;
+      if(score>bestScore){bestScore=score;best=m;}
+    }
+    move=best;
+  }
+
+  movePiece(move.x1,move.y1,move.x2,move.y2);
+
+  turn="white";
+  botThinking=false;
+  draw();
+}
+
+function click(x,y){
+  if(turn!="white"||gameOver||botThinking||promotionActive)return;
+
+  let p=board[y][x];
+
+  if(selected){
+    let m=legalMoves.find(v=>v.x===x&&v.y===y);
+    if(m){
+      movePiece(selected.x,selected.y,x,y);
+      selected=null;legalMoves=[];
+      turn="black";botThinking=true;
+      setTimeout(botMove,1000+Math.random()*600);
+    }else{selected=null;legalMoves=[];}
+  }else{
+    if(p&&p===p.toUpperCase()){selected={x,y};legalMoves=getMoves(x,y,true);}
+  }
+
+  draw();
+}
+
+function draw(){
+  game.innerHTML="";
+  let w=0,b=0;
+
+  for(let y=0;y<8;y++)for(let x=0;x<8;x++){
+    let sq=document.createElement("div");
+    sq.className="square "+((x+y)%2?"blackSq":"whiteSq");
+
+    let p=board[y][x];
+    if(p){sq.textContent=P[p];if(p===p.toUpperCase())w++;else b++;}
+    if(selected&&selected.x===x&&selected.y===y)sq.classList.add("selected");
+
+    sq.onclick=()=>click(x,y);
+    game.appendChild(sq);
+  }
+
+  wCountEl.textContent=w;
+  bCountEl.textContent=b;
+  wTimeEl.textContent=format(whiteTime);
+  bTimeEl.textContent=format(blackTime);
+}
+
+restartGame();
+</script>
+</body>
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Checkers Full Final</title>
+
+<style>
+body{
+  margin:0;
+  background:#0f1115;
+  font-family:Arial;
+  color:white;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+/* UI */
+#ui{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin:12px;
+  padding:10px 18px;
+  background:#1a1f2a;
+  border-radius:12px;
+  align-items:center;
+}
+
+/* buttons */
+button{
+  padding:6px 10px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+/* active difficulty glow */
+button.active{
+  box-shadow:0 0 12px 3px #ffd54a;
+  background:#2b2f3a;
+  color:white;
+}
+
+/* board */
+#board{
+  display:grid;
+  grid-template-columns:repeat(8,70px);
+  grid-template-rows:repeat(8,70px);
+  border-radius:10px;
+  overflow:hidden;
+}
+
+.cell{
+  width:70px;
+  height:70px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.black{background:#769656;}
+.white{background:#eeeed2;}
+
+/* pieces */
+.piece{
+  width:52px;
+  height:52px;
+  border-radius:50%;
+  transition:0.15s;
+}
+
+.red{background:crimson;}
+.blue{background:#1e3a8a;}
+
+.king{
+  box-shadow:0 0 10px gold;
+  border:2px solid gold;
+}
+
+/* selected glow */
+.selected{
+  box-shadow:0 0 18px 6px yellow;
+  transform:scale(1.1);
+}
+
+/* modal */
+#modalBg{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+#modal{
+  background:#1a1f2a;
+  padding:20px;
+  border-radius:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="ui">
+🎮 Difficulty:
+<button onclick="setDifficulty('easy')">Easy</button>
+<button onclick="setDifficulty('normal')">Normal</button>
+<button onclick="setDifficulty('hard')">Hard</button>
+
+🔴 Red: <span id="rTime">0</span>s
+🔵 Blue: <span id="bTime">0</span>s
+🎮 Turn: <span id="turn"></span>
+</div>
+
+<div id="board"></div>
+
+<div id="modalBg">
+  <div id="modal">
+    <h2 id="msg"></h2>
+    <button onclick="location.reload()">Restart</button>
+  </div>
+</div>
+
+<script>
+
+let state, selected=null;
+let turn="red", gameOver=false;
+let difficulty="normal";
+let rTime=0,bTime=0;
+
+const board=document.getElementById("board");
+
+init();
+
+// ---------------- INIT ----------------
+function init(){
+  state=Array(8).fill().map(()=>Array(8).fill(null));
+
+  for(let r=0;r<3;r++)
+    for(let c=0;c<8;c++)
+      if((r+c)%2) state[r][c]={color:"blue"};
+
+  for(let r=5;r<8;r++)
+    for(let c=0;c<8;c++)
+      if((r+c)%2) state[r][c]={color:"red"};
+
+  setInterval(timer,1000);
+  render();
+}
+
+// ---------------- TIMER ----------------
+function timer(){
+  if(gameOver) return;
+  if(turn==="red") rTime++;
+  else bTime++;
+  updateUI();
+}
+
+// ---------------- DIFFICULTY ----------------
+function setDifficulty(l){
+  difficulty=l;
+
+  document.querySelectorAll("#ui button").forEach(b=>{
+    if(["easy","normal","hard"].includes(b.innerText.toLowerCase())){
+      b.classList.remove("active");
+    }
+  });
+
+  event.target.classList.add("active");
+}
+
+// ---------------- RENDER ----------------
+function render(){
+  board.innerHTML="";
+
+  for(let r=0;r<8;r++){
+    for(let c=0;c<8;c++){
+
+      let cell=document.createElement("div");
+      cell.className="cell "+((r+c)%2?"black":"white");
+      cell.onclick=()=>click(r,c);
+
+      let p=state[r][c];
+
+      if(p){
+        let d=document.createElement("div");
+        d.className="piece "+p.color;
+
+        // ⭐ selected glow
+        if(selected && selected.r===r && selected.c===c){
+          d.classList.add("selected");
+        }
+
+        cell.appendChild(d);
+      }
+
+      board.appendChild(cell);
+    }
+  }
+
+  updateUI();
+}
+
+// ---------------- UI ----------------
+function updateUI(){
+  document.getElementById("rTime").innerText=rTime;
+  document.getElementById("bTime").innerText=bTime;
+  document.getElementById("turn").innerText=turn;
+}
+
+// ---------------- CLICK ----------------
+function click(r,c){
+  if(gameOver||turn!=="red") return;
+
+  let p=state[r][c];
+
+  if(selected){
+    if(move(selected.r,selected.c,r,c)){
+      render();
+      setTimeout(aiTurn,300);
+      return;
+    }
+  }
+
+  if(p&&p.color==="red") selected={r,c};
+  else selected=null;
+
+  render();
+}
+
+// ---------------- MOVE ----------------
+function move(r1,c1,r2,c2){
+  let p=state[r1][c1];
+  if(!p||state[r2][c2]) return false;
+
+  let dr=r2-r1;
+
+  // normal move
+  if(Math.abs(dr)===1){
+    state[r2][c2]=p;
+    state[r1][c1]=null;
+    selected=null;
+    endTurn();
+    return true;
+  }
+
+  // capture
+  if(Math.abs(dr)===2){
+    let mr=(r1+r2)/2, mc=(c1+c2)/2;
+
+    let mid=state[mr][mc];
+    if(!mid||mid.color===p.color) return false;
+
+    state[mr][mc]=null;
+    state[r2][c2]=p;
+    state[r1][c1]=null;
+
+    selected={r:r2,c:c2};
+
+    if(!canJump(r2,c2)){
+      selected=null;
+      endTurn();
+    }
+
+    return true;
+  }
+
+  return false;
+}
+
+// ---------------- JUMP ----------------
+function canJump(r,c){
+  let dirs=[[2,2],[2,-2],[-2,2],[-2,-2]];
+
+  for(let [dr,dc] of dirs){
+    let r2=r+dr,c2=c+dc;
+    if(r2<0||r2>7||c2<0||c2>7) continue;
+
+    let mr=(r+r2)/2,mc=(c+c2)/2;
+    let mid=state[mr][mc];
+
+    if(mid&&mid.color!=="red"&&!state[r2][c2])
+      return true;
+  }
+
+  return false;
+}
+
+// ---------------- TURN ----------------
+function endTurn(){
+  turn=(turn==="red")?"blue":"red";
+  checkWin();
+}
+
+// ---------------- AI ----------------
+async function aiTurn(){
+  if(gameOver||turn!=="blue") return;
+
+  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+  while(true){
+
+    let moves=[];
+
+    for(let r=0;r<8;r++){
+      for(let c=0;c<8;c++){
+        let p=state[r][c];
+        if(!p||p.color!=="blue") continue;
+
+        let dirs=[[1,1],[1,-1],[-1,1],[-1,-1],[2,2],[2,-2],[-2,2],[-2,-2]];
+
+        for(let [dr,dc] of dirs){
+          let r2=r+dr,c2=c+dc;
+          if(r2<0||r2>7||c2<0||c2>7) continue;
+
+          if(!state[r2][c2]) moves.push({r,c,r2,c2});
+        }
+      }
+    }
+
+    if(moves.length===0) break;
+
+    let caps=moves.filter(m=>Math.abs(m.r2-m.r)===2);
+
+    let pool;
+
+    if(difficulty==="easy"){
+      pool = Math.random()<0.5 ? moves : caps;
+    }
+    else if(difficulty==="normal"){
+      pool = caps.length ? caps : moves;
+      if(Math.random()<0.2) pool = moves;
+    }
+    else{
+      pool = caps.length ? caps : moves;
+    }
+
+    let m=pool[Math.floor(Math.random()*pool.length)];
+
+    let p=state[m.r][m.c];
+    state[m.r][m.c]=null;
+
+    if(Math.abs(m.r2-m.r)===2){
+      let mr=(m.r+m.r2)/2,mc=(m.c+m.c2)/2;
+      state[mr][mc]=null;
+    }
+
+    state[m.r2][m.c2]=p;
+
+    render();
+
+    await sleep(difficulty==="easy"?600:difficulty==="normal"?400:250);
+
+    if(!canJump(m.r2,m.c2)) break;
+  }
+
+  turn="red";
+  render();
+}
+
+// ---------------- WIN ----------------
+function checkWin(){
+  let r=0,b=0;
+
+  for(let i=0;i<8;i++)
+    for(let j=0;j<8;j++)
+      if(state[i][j]){
+        state[i][j].color==="red"?r++:b++;
+      }
+
+  if(r===0||b===0){
+    gameOver=true;
+    document.getElementById("msg").innerText=
+      r===0?"Blue Wins":"Red Wins";
+    document.getElementById("modalBg").style.display="flex";
+  }
+}
+
+</script>
+</body>
+</html>
