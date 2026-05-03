@@ -3,9 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Game Hub</title>
-
-<!-- PWA -->
-<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#00ffcc">
 
 <style>
@@ -17,7 +14,7 @@ body{
   overflow:hidden;
 }
 
-/* 🌌 NEON BACKGROUND */
+/* 🌌 BACKGROUND */
 .bg{
   position:fixed;
   inset:0;
@@ -31,7 +28,7 @@ body{
 
 @keyframes move{
   0%{transform:scale(1);}
-  100%{transform:scale(1.2) translate(-20px,20px);}
+  100%{transform:scale(1.15) translate(-20px,20px);}
 }
 
 /* HEADER */
@@ -93,6 +90,37 @@ header h1{
   z-index:2;
 }
 
+/* 🎮 LOADING (FIXED) */
+#loading{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.95);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  z-index:9999; /* IMPORTANT FIX */
+}
+
+.spinner{
+  width:70px;
+  height:70px;
+  border:6px solid #333;
+  border-top:6px solid #00ffcc;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  margin-bottom:15px;
+}
+
+@keyframes spin{
+  100%{transform:rotate(360deg);}
+}
+
+#loadingText{
+  color:#00ffcc;
+  font-size:18px;
+}
+
 /* GAME SCREEN */
 #gameScreen{
   position:fixed;
@@ -100,6 +128,7 @@ header h1{
   display:none;
   flex-direction:column;
   background:black;
+  z-index:50;
 }
 
 #topbar{
@@ -119,30 +148,18 @@ button{
   font-weight:bold;
 }
 
-/* LOADING */
-#loading{
-  position:fixed;
-  inset:0;
-  background:black;
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:999;
-  color:#00ffcc;
-  font-size:20px;
-}
-
-/* MUSIC BUTTON */
+/* 🎵 MUSIC BUTTON */
 #musicBtn{
   position:fixed;
   bottom:15px;
   right:15px;
-  padding:10px;
+  padding:10px 14px;
   border:none;
   border-radius:10px;
   background:#00ffcc;
-  cursor:pointer;
   font-weight:bold;
+  cursor:pointer;
+  z-index:1000;
 }
 </style>
 </head>
@@ -185,10 +202,13 @@ button{
 
 <button id="musicBtn" onclick="toggleMusic()">🎵 Music</button>
 
-<!-- LOADING -->
-<div id="loading">Loading...</div>
+<!-- ⭕ LOADING SCREEN -->
+<div id="loading">
+  <div class="spinner"></div>
+  <div id="loadingText">Loading game...</div>
+</div>
 
-<!-- GAME SCREEN -->
+<!-- GAME -->
 <div id="gameScreen">
   <div id="topbar">
     <span id="title"></span>
@@ -199,25 +219,26 @@ button{
 
 <script>
 
-/* 🎧 MUSIC SYSTEM */
 const music = document.getElementById("music");
-let musicOn = false;
+let musicPlaying = false;
 
-function tryPlayMusic(){
-  music.play().catch(()=>{});
-}
-
-document.addEventListener("click", tryPlayMusic);
-
+/* 🎧 MUSIC (safe + toggle) */
 function toggleMusic(){
   if(music.paused){
-    music.play();
-    musicOn = true;
+    music.play().then(()=>musicPlaying=true);
   }else{
     music.pause();
-    musicOn = false;
+    musicPlaying=false;
   }
 }
+
+/* auto attempt (browser-safe) */
+document.addEventListener("click", ()=>{
+  if(!musicPlaying){
+    music.play().catch(()=>{});
+    musicPlaying=true;
+  }
+});
 
 /* 🎮 OPEN GAME */
 function openGame(file,title){
@@ -227,6 +248,7 @@ function openGame(file,title){
   setTimeout(()=>{
 
     document.getElementById("loading").style.display="none";
+
     document.querySelector(".hub").style.display="none";
     document.querySelector("header").style.display="none";
 
@@ -234,7 +256,7 @@ function openGame(file,title){
     document.getElementById("frame").src=file;
     document.getElementById("title").innerText=title;
 
-  },800);
+  },900);
 }
 
 /* ⬅ CLOSE */
@@ -243,13 +265,6 @@ function closeGame(){
   document.querySelector(".hub").style.display="flex";
   document.querySelector("header").style.display="block";
   document.getElementById("frame").src="";
-}
-
-/* 📦 PWA SERVICE WORKER */
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js")
-    .then(()=>console.log("SW OK"))
-    .catch(err=>console.log("SW error",err));
 }
 
 </script>
