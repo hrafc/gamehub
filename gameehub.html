@@ -4,28 +4,33 @@
 <meta charset="UTF-8">
 <title>Game Hub</title>
 
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00ffcc">
+
 <style>
 body{
   margin:0;
   font-family:Arial;
-  overflow:hidden;
-  color:white;
   background:#05070f;
+  color:white;
+  overflow:hidden;
 }
 
 /* 🌌 NEON BACKGROUND */
 .bg{
   position:fixed;
   inset:0;
-  background:radial-gradient(circle at 20% 20%, #00ffcc22, transparent 40%),
-             radial-gradient(circle at 80% 60%, #7a00ff22, transparent 40%),
-             radial-gradient(circle at 40% 80%, #00aaff22, transparent 40%);
-  animation:move 10s infinite alternate ease-in-out;
+  background:
+    radial-gradient(circle at 20% 20%, #00ffcc33, transparent 40%),
+    radial-gradient(circle at 80% 60%, #7a00ff33, transparent 40%),
+    radial-gradient(circle at 40% 80%, #00aaff33, transparent 40%);
+  animation:move 8s infinite alternate ease-in-out;
   z-index:-1;
 }
 
 @keyframes move{
-  0%{transform:scale(1) translate(0,0);}
+  0%{transform:scale(1);}
   100%{transform:scale(1.2) translate(-20px,20px);}
 }
 
@@ -50,7 +55,7 @@ header h1{
   padding:30px;
 }
 
-/* 🎮 STEAM CARD */
+/* CARD */
 .card{
   width:230px;
   height:210px;
@@ -88,24 +93,6 @@ header h1{
   z-index:2;
 }
 
-.stats{
-  position:relative;
-  z-index:2;
-  font-size:12px;
-  color:#aefcff;
-}
-
-/* LOADING */
-#loading{
-  position:fixed;
-  inset:0;
-  display:none;
-  justify-content:center;
-  align-items:center;
-  background:black;
-  z-index:999;
-}
-
 /* GAME SCREEN */
 #gameScreen{
   position:fixed;
@@ -120,19 +107,42 @@ header h1{
   padding:10px;
   display:flex;
   justify-content:space-between;
+  align-items:center;
 }
 
-/* MUSIC BTN */
+button{
+  padding:8px 14px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  background:#00ffcc;
+  font-weight:bold;
+}
+
+/* LOADING */
+#loading{
+  position:fixed;
+  inset:0;
+  background:black;
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+  color:#00ffcc;
+  font-size:20px;
+}
+
+/* MUSIC BUTTON */
 #musicBtn{
   position:fixed;
   bottom:15px;
   right:15px;
   padding:10px;
   border:none;
-  background:#00ffcc;
-  font-weight:bold;
   border-radius:10px;
+  background:#00ffcc;
   cursor:pointer;
+  font-weight:bold;
 }
 </style>
 </head>
@@ -142,36 +152,33 @@ header h1{
 <div class="bg"></div>
 
 <header>
-  <h1>🎮 STEAM HUB</h1>
-  <p>Neon Game Launcher</p>
+  <h1>🎮 GAME HUB</h1>
+  <p>Steam-style launcher</p>
 </header>
 
 <div class="hub">
 
   <div class="card" style="background-image:url(logochess.png)"
-    onclick="openGame('game1.html','chess')">
+    onclick="openGame('game1.html','Chess')">
     <div class="overlay"></div>
     <h2>♟ Chess</h2>
-    <div class="stats" id="chessStats"></div>
   </div>
 
   <div class="card" style="background-image:url(logocheckers.png)"
-    onclick="openGame('game2.html','checkers')">
+    onclick="openGame('game2.html','Checkers')">
     <div class="overlay"></div>
     <h2>⚫ Checkers</h2>
-    <div class="stats" id="checkersStats"></div>
   </div>
 
   <div class="card" style="background-image:url(logocrosssum.png)"
-    onclick="openGame('game3.html','cross')">
+    onclick="openGame('game3.html','Cross Sums')">
     <div class="overlay"></div>
     <h2>🧠 Cross Sums</h2>
-    <div class="stats" id="crossStats"></div>
   </div>
 
 </div>
 
-<!-- MUSIC -->
+<!-- 🎧 MUSIC -->
 <audio id="music" loop>
   <source src="elevator.mp3" type="audio/mpeg">
 </audio>
@@ -181,82 +188,69 @@ header h1{
 <!-- LOADING -->
 <div id="loading">Loading...</div>
 
-<!-- GAME -->
+<!-- GAME SCREEN -->
 <div id="gameScreen">
   <div id="topbar">
     <span id="title"></span>
     <button onclick="closeGame()">⬅ Back</button>
   </div>
-  <iframe id="frame"></iframe>
+  <iframe id="frame" style="width:100%;height:100%;border:none;"></iframe>
 </div>
 
 <script>
 
-/* 🎧 MUSIC SAFE START */
-let music = document.getElementById("music");
-let started = false;
+/* 🎧 MUSIC SYSTEM */
+const music = document.getElementById("music");
+let musicOn = false;
 
-function startMusic(){
-  if(started) return;
-  music.play().then(()=>started=true).catch(()=>{});
-}
-document.addEventListener("click", startMusic);
-
-/* 📊 LOCAL SAVE SYSTEM (GitHub-ready structure) */
-let stats = JSON.parse(localStorage.getItem("stats")) || {
-  chess:{time:0},
-  checkers:{time:0},
-  cross:{time:0}
-};
-
-let timer=null;
-let active=null;
-
-/* UI */
-function update(){
-  document.getElementById("chessStats").innerText="⏱ "+stats.chess.time+"s";
-  document.getElementById("checkersStats").innerText="⏱ "+stats.checkers.time+"s";
-  document.getElementById("crossStats").innerText="⏱ "+stats.cross.time+"s";
-  localStorage.setItem("stats",JSON.stringify(stats));
+function tryPlayMusic(){
+  music.play().catch(()=>{});
 }
 
-/* OPEN GAME */
-function openGame(file,key){
+document.addEventListener("click", tryPlayMusic);
 
-  active=key;
+function toggleMusic(){
+  if(music.paused){
+    music.play();
+    musicOn = true;
+  }else{
+    music.pause();
+    musicOn = false;
+  }
+}
+
+/* 🎮 OPEN GAME */
+function openGame(file,title){
+
   document.getElementById("loading").style.display="flex";
 
   setTimeout(()=>{
+
     document.getElementById("loading").style.display="none";
     document.querySelector(".hub").style.display="none";
     document.querySelector("header").style.display="none";
 
     document.getElementById("gameScreen").style.display="flex";
     document.getElementById("frame").src=file;
-
-    timer=setInterval(()=>{
-      stats[key].time++;
-      update();
-    },1000);
+    document.getElementById("title").innerText=title;
 
   },800);
 }
 
-/* CLOSE */
+/* ⬅ CLOSE */
 function closeGame(){
-  clearInterval(timer);
   document.getElementById("gameScreen").style.display="none";
   document.querySelector(".hub").style.display="flex";
   document.querySelector("header").style.display="block";
   document.getElementById("frame").src="";
 }
 
-/* MUSIC */
-function toggleMusic(){
-  music.paused ? music.play() : music.pause();
+/* 📦 PWA SERVICE WORKER */
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js")
+    .then(()=>console.log("SW OK"))
+    .catch(err=>console.log("SW error",err));
 }
-
-update();
 
 </script>
 
