@@ -8,21 +8,40 @@
 body{
   margin:0;
   font-family:Arial;
-  background:#0f111a;
-  color:white;
   overflow:hidden;
+  color:white;
+  background:#05070f;
 }
 
+/* 🌌 NEON BACKGROUND */
+.bg{
+  position:fixed;
+  inset:0;
+  background:radial-gradient(circle at 20% 20%, #00ffcc22, transparent 40%),
+             radial-gradient(circle at 80% 60%, #7a00ff22, transparent 40%),
+             radial-gradient(circle at 40% 80%, #00aaff22, transparent 40%);
+  animation:move 10s infinite alternate ease-in-out;
+  z-index:-1;
+}
+
+@keyframes move{
+  0%{transform:scale(1) translate(0,0);}
+  100%{transform:scale(1.2) translate(-20px,20px);}
+}
+
+/* HEADER */
 header{
   text-align:center;
-  padding:20px;
+  padding:25px;
 }
 
 header h1{
+  font-size:42px;
   margin:0;
-  font-size:40px;
+  text-shadow:0 0 15px #00ffcc;
 }
 
+/* HUB */
 .hub{
   display:flex;
   justify-content:center;
@@ -31,9 +50,10 @@ header h1{
   padding:30px;
 }
 
+/* 🎮 STEAM CARD */
 .card{
-  width:220px;
-  height:200px;
+  width:230px;
+  height:210px;
   border-radius:16px;
   position:relative;
   background-size:cover;
@@ -48,24 +68,23 @@ header h1{
   padding:12px;
 
   border:2px solid rgba(0,255,200,0.6);
-  box-shadow:0 0 12px rgba(0,255,200,0.4);
+  box-shadow:0 0 20px rgba(0,255,200,0.2);
 }
 
 .card:hover{
   transform:scale(1.08);
-  box-shadow:0 0 25px rgba(0,255,200,0.9);
+  box-shadow:0 0 30px rgba(0,255,200,0.8);
 }
 
 .overlay{
   position:absolute;
   inset:0;
-  background:rgba(0,0,0,0.45);
+  background:rgba(0,0,0,0.5);
 }
 
 .card h2{
   position:relative;
   margin:0;
-  font-size:18px;
   z-index:2;
 }
 
@@ -73,17 +92,27 @@ header h1{
   position:relative;
   z-index:2;
   font-size:12px;
-  margin-top:4px;
   color:#aefcff;
+}
+
+/* LOADING */
+#loading{
+  position:fixed;
+  inset:0;
+  display:none;
+  justify-content:center;
+  align-items:center;
+  background:black;
+  z-index:999;
 }
 
 /* GAME SCREEN */
 #gameScreen{
   position:fixed;
   inset:0;
-  background:black;
   display:none;
   flex-direction:column;
+  background:black;
 }
 
 #topbar{
@@ -91,111 +120,71 @@ header h1{
   padding:10px;
   display:flex;
   justify-content:space-between;
-  align-items:center;
 }
 
-button{
-  padding:8px 14px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  background:#00ffcc;
-  font-weight:bold;
-}
-
-iframe{
-  width:100%;
-  height:100%;
-  border:none;
-}
-
-/* LOADING */
-#loading{
-  position:fixed;
-  inset:0;
-  background:black;
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:999;
-}
-
-.loader{
-  width:60px;
-  height:60px;
-  border:6px solid #333;
-  border-top:6px solid #00ffcc;
-  border-radius:50%;
-  animation:spin 1s linear infinite;
-}
-
-@keyframes spin{
-  100%{transform:rotate(360deg);}
-}
-
-/* MUSIC BUTTON */
+/* MUSIC BTN */
 #musicBtn{
   position:fixed;
   bottom:15px;
   right:15px;
-  background:#00ffcc;
+  padding:10px;
   border:none;
-  padding:10px 14px;
+  background:#00ffcc;
+  font-weight:bold;
   border-radius:10px;
   cursor:pointer;
-  font-weight:bold;
 }
 </style>
 </head>
 
 <body>
 
+<div class="bg"></div>
+
 <header>
-  <h1>🎮 GAME HUB</h1>
-  <p>Choose your game</p>
+  <h1>🎮 STEAM HUB</h1>
+  <p>Neon Game Launcher</p>
 </header>
 
 <div class="hub">
 
   <div class="card" style="background-image:url(logochess.png)"
-    onclick="openGame('game1.html','Chess','chess')">
+    onclick="openGame('game1.html','chess')">
     <div class="overlay"></div>
     <h2>♟ Chess</h2>
-    <div class="stats">⏱ Time mode</div>
+    <div class="stats" id="chessStats"></div>
   </div>
 
   <div class="card" style="background-image:url(logocheckers.png)"
-    onclick="openGame('game2.html','Checkers','checkers')">
+    onclick="openGame('game2.html','checkers')">
     <div class="overlay"></div>
     <h2>⚫ Checkers</h2>
-    <div class="stats">⏱ Time mode</div>
+    <div class="stats" id="checkersStats"></div>
   </div>
 
   <div class="card" style="background-image:url(logocrosssum.png)"
-    onclick="openGame('game3.html','Cross Sums','cross')">
+    onclick="openGame('game3.html','cross')">
     <div class="overlay"></div>
     <h2>🧠 Cross Sums</h2>
-    <div class="stats">⏱ Time mode</div>
+    <div class="stats" id="crossStats"></div>
   </div>
 
 </div>
 
-<!-- 🎧 AUDIO (SAFE) -->
-<audio id="bgMusic" loop preload="auto">
+<!-- MUSIC -->
+<audio id="music" loop>
   <source src="elevator.mp3" type="audio/mpeg">
 </audio>
 
 <button id="musicBtn" onclick="toggleMusic()">🎵 Music</button>
 
 <!-- LOADING -->
-<div id="loading">
-  <div class="loader"></div>
-</div>
+<div id="loading">Loading...</div>
 
 <!-- GAME -->
 <div id="gameScreen">
   <div id="topbar">
-    <span id="title">Game</span>
+    <span id="title"></span>
     <button onclick="closeGame()">⬅ Back</button>
   </div>
   <iframe id="frame"></iframe>
@@ -203,70 +192,71 @@ iframe{
 
 <script>
 
-let music = document.getElementById("bgMusic");
-music.volume = 0.3;
+/* 🎧 MUSIC SAFE START */
+let music = document.getElementById("music");
+let started = false;
 
-let musicStarted = false;
-let timer = null;
-
-/* 🧠 SAFE MUSIC START (FIXED) */
 function startMusic(){
-  if(musicStarted) return;
-
-  const playPromise = music.play();
-
-  if(playPromise !== undefined){
-    playPromise
-      .then(()=>{
-        musicStarted = true;
-      })
-      .catch(err=>{
-        console.log("Music blocked until user interacts:", err);
-      });
-  }
-
-  document.removeEventListener("click", startMusic);
+  if(started) return;
+  music.play().then(()=>started=true).catch(()=>{});
 }
-
-/* must be user interaction */
 document.addEventListener("click", startMusic);
 
-/* OPEN GAME */
-function openGame(file,title){
+/* 📊 LOCAL SAVE SYSTEM (GitHub-ready structure) */
+let stats = JSON.parse(localStorage.getItem("stats")) || {
+  chess:{time:0},
+  checkers:{time:0},
+  cross:{time:0}
+};
 
+let timer=null;
+let active=null;
+
+/* UI */
+function update(){
+  document.getElementById("chessStats").innerText="⏱ "+stats.chess.time+"s";
+  document.getElementById("checkersStats").innerText="⏱ "+stats.checkers.time+"s";
+  document.getElementById("crossStats").innerText="⏱ "+stats.cross.time+"s";
+  localStorage.setItem("stats",JSON.stringify(stats));
+}
+
+/* OPEN GAME */
+function openGame(file,key){
+
+  active=key;
   document.getElementById("loading").style.display="flex";
 
   setTimeout(()=>{
-
     document.getElementById("loading").style.display="none";
     document.querySelector(".hub").style.display="none";
     document.querySelector("header").style.display="none";
 
     document.getElementById("gameScreen").style.display="flex";
     document.getElementById("frame").src=file;
-    document.getElementById("title").innerText=title;
+
+    timer=setInterval(()=>{
+      stats[key].time++;
+      update();
+    },1000);
 
   },800);
 }
 
-/* CLOSE GAME */
+/* CLOSE */
 function closeGame(){
-
+  clearInterval(timer);
   document.getElementById("gameScreen").style.display="none";
   document.querySelector(".hub").style.display="flex";
   document.querySelector("header").style.display="block";
-
   document.getElementById("frame").src="";
 }
 
-/* TOGGLE MUSIC */
+/* MUSIC */
 function toggleMusic(){
-  if(music.paused){
-    music.play();
-  }else{
-    music.pause();
-  }
+  music.paused ? music.play() : music.pause();
 }
+
+update();
 
 </script>
 
