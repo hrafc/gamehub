@@ -81,7 +81,7 @@ header h1{
   margin:0;
 }
 
-/* ⭕ LOADING FIXED */
+/* ⭕ LOADING */
 #loading{
   position:fixed;
   inset:0;
@@ -141,6 +141,20 @@ header h1{
   cursor:pointer;
   z-index:1000;
 }
+
+/* ☕ KO-FI BUTTON */
+#kofiWrap{
+  position:fixed;
+  bottom:70px;
+  right:15px;
+  z-index:1000;
+  transition:0.2s;
+}
+
+#kofiWrap:hover{
+  transform:scale(1.08);
+  filter:drop-shadow(0 0 10px rgba(255,120,120,0.6));
+}
 </style>
 </head>
 
@@ -175,11 +189,21 @@ header h1{
 </div>
 
 <!-- 🎧 MUSIC -->
-<audio id="music" loop preload="auto">
+<audio id="music" loop>
   <source src="elevator.mp3" type="audio/mpeg">
 </audio>
 
 <button id="musicBtn">🎵 Music</button>
+
+<!-- ☕ KO-FI -->
+<div id="kofiWrap">
+  <a href="https://ko-fi.com/H2H31YWFQ7" target="_blank">
+    <img height="40"
+         style="border:0px;height:40px;"
+         src="https://storage.ko-fi.com/cdn/kofi6.png?v=6"
+         alt="Support me on Ko-fi" />
+  </a>
+</div>
 
 <!-- ⭕ LOADING -->
 <div id="loading">
@@ -201,21 +225,19 @@ header h1{
 const music = document.getElementById("music");
 const btn = document.getElementById("musicBtn");
 
-let isPlaying = false;
+let playing = false;
 
-/* 🎵 MUSIC TOGGLE (FIXED) */
+/* 🎵 MUSIC TOGGLE */
 btn.onclick = async () => {
-  if (!isPlaying) {
-    try {
+  if(!playing){
+    try{
       await music.play();
-      isPlaying = true;
+      playing = true;
       btn.innerText = "⏸ Music";
-    } catch (e) {
-      console.log("Music blocked until user interaction");
-    }
-  } else {
+    }catch(e){}
+  }else{
     music.pause();
-    isPlaying = false;
+    playing = false;
     btn.innerText = "🎵 Music";
   }
 };
@@ -247,13 +269,10 @@ function closeGame(){
   document.getElementById("frame").src="";
 }
 
-/* 🔥 SERVICE WORKER (FIXED) */
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js")
-      .then(() => console.log("SW registered"))
-      .catch(err => console.log("SW failed", err));
-  });
+/* SW */
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("./sw.js")
+    .catch(console.error);
 }
 
 </script>
