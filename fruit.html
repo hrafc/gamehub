@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌸 Fruit Division Clicker 🌸</title>
+<style>
+:root{
+    --bg1:#ff8fc7;
+    --bg2:#ffd6eb;
+    --panel:rgba(255,255,255,0.22);
+    --panel2:rgba(255,255,255,0.18);
+    --text:#fffafc;
+    --shadow:0 12px 30px rgba(120, 34, 85, 0.18);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;min-height:100%;}
+body{
+    font-family:'Comic Sans MS','Trebuchet MS',Arial,sans-serif;
+    color:var(--text);
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    overflow-x:hidden;
+}
+body::before,
+body::after{
+    content:"";
+    position:fixed;
+    width:240px;
+    height:240px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.14);
+    filter:blur(16px);
+    z-index:0;
+    animation:floaty 10s ease-in-out infinite;
+}
+body::before{top:-70px;left:-60px;}
+body::after{right:-50px;bottom:-70px;animation-delay:-4s;}
+@keyframes floaty{
+    0%,100%{transform:translateY(0) scale(1);}
+    50%{transform:translateY(18px) scale(1.08);}
+}
+.container{
+    position:relative;
+    z-index:1;
+    max-width:1100px;
+    margin:0 auto;
+    padding:16px;
+}
+.title{
+    text-align:center;
+    margin:4px 0 12px;
+    text-shadow:0 4px 10px rgba(0,0,0,0.15);
+}
+.title h1{
+    margin:0;
+    font-size:clamp(1.8rem,5vw,3rem);
+}
+.title p{
+    margin:6px 0 0;
+    opacity:0.95;
+}
+.dashboard{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:10px;
+    margin-bottom:12px;
+}
+.card{
+    background:var(--panel);
+    border:1px solid rgba(255,255,255,0.25);
+    backdrop-filter:blur(14px);
+    border-radius:24px;
+    box-shadow:var(--shadow);
+}
+.stat{
+    padding:12px 10px;
+    text-align:center;
+}
+.stat .label{font-size:0.86rem;opacity:0.9;}
+.stat .value{font-size:1.18rem;font-weight:bold;margin-top:4px;}
+
+.mainCard{
+    padding:16px;
+    position:relative;
+    overflow:hidden;
+}
+.mainCard::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:radial-gradient(circle at top right,rgba(255,255,255,0.35),transparent 40%);
+    pointer-events:none;
+}
+.badges{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:8px;
+    margin-bottom:10px;
+}
+.badge{
+    padding:7px 12px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.22);
+    border:1px solid rgba(255,255,255,0.25);
+    font-size:0.9rem;
+}
+.levelTitle{
+    text-align:center;
+    margin:0;
+    font-size:1.35rem;
+}
+.subText{
+    text-align:center;
+    margin:4px 0 0;
+    opacity:0.94;
+}
+
+.fruitWrap{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    margin:14px 0 10px;
+}
+#fruitButton{
+    width:min(250px,70vw);
+    height:min(250px,70vw);
+    border:none;
+    border-radius:50%;
+    cursor:pointer;
+    background:linear-gradient(145deg,rgba(255,255,255,0.92),rgba(255,255,255,0.55));
+    box-shadow:0 18px 40px rgba(112,27,77,0.25), inset 0 6px 20px rgba(255,255,255,0.55);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    transition:transform .08s ease, box-shadow .12s ease;
+}
+#fruitButton:hover{transform:translateY(-2px) scale(1.01);}
+#fruitButton:active{transform:scale(0.94);}
+#fruitEmoji{font-size:clamp(4rem,12vw,6rem);line-height:1;}
+#fruitName{margin-top:8px;color:#944b72;font-size:1.08rem;font-weight:bold;}
+
+.progressBox{
+    margin:8px auto 0;
+    max-width:700px;
+}
+.progressBar{
+    height:22px;
+    background:rgba(255,255,255,0.28);
+    border-radius:999px;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,0.35);
+}
+#progressFill{
+    height:100%;
+    width:0%;
+    border-radius:999px;
+    background:linear-gradient(90deg,#fff0f7,#fff98f);
+    transition:width .2s ease;
+}
+.progressMeta{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    margin-top:8px;
+    font-size:.92rem;
+    flex-wrap:wrap;
+}
+
+.actionRow{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    margin:14px 0 12px;
+    flex-wrap:wrap;
+}
+.actionBtn{
+    border:none;
+    border-radius:16px;
+    padding:12px 18px;
+    background:linear-gradient(135deg,#ff5eb4,#ff8fc7);
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 8px 18px rgba(130,27,75,0.2);
+    min-width:160px;
+}
+.actionBtn:hover{filter:brightness(1.04);}
+
+.overviewBox{
+    margin-top:8px;
+    background:rgba(255,255,255,0.14);
+    border:1px solid rgba(255,255,255,0.22);
+    border-radius:20px;
+    padding:12px;
+}
+.overviewTitle{
+    text-align:center;
+    font-weight:bold;
+    margin-bottom:8px;
+}
+.levelOverview{
+    display:grid;
+    gap:10px;
+}
+.miniDivision{
+    background:rgba(255,255,255,0.12);
+    border:1px solid rgba(255,255,255,0.16);
+    border-radius:16px;
+    padding:10px;
+}
+.miniDivisionHead{
+    display:flex;
+    justify-content:space-between;
+    gap:8px;
+    align-items:center;
+    margin-bottom:8px;
+    font-size:0.92rem;
+}
+.miniDots{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+}
+.miniDot{
+    min-width:38px;
+    padding:6px 8px;
+    border-radius:12px;
+    text-align:center;
+    background:rgba(255,255,255,0.14);
+    border:1px solid rgba(255,255,255,0.18);
+    font-size:0.84rem;
+}
+.miniDot.done{background:rgba(177,255,205,0.3);}
+.miniDot.active{background:rgba(255,244,152,0.45);}
+.miniDot.locked{opacity:0.5;}
+
+.feedCard{
+    margin-top:12px;
+    padding:12px;
+}
+.feedTitle{
+    font-weight:bold;
+    margin-bottom:8px;
+}
+.messageList{
+    display:grid;
+    gap:8px;
+}
+.message{
+    padding:9px 12px;
+    border-radius:14px;
+    background:rgba(255,255,255,0.16);
+    border:1px solid rgba(255,255,255,0.2);
+    font-size:0.92rem;
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(18,10,22,0.55);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+    z-index:50;
+}
+.modal.show{display:flex;}
+.modalContent{
+    width:min(950px,100%);
+    max-height:88vh;
+    overflow:auto;
+    background:linear-gradient(135deg,rgba(255,155,213,0.96),rgba(255,214,235,0.96));
+    border:1px solid rgba(255,255,255,0.35);
+    border-radius:26px;
+    box-shadow:0 24px 50px rgba(32,10,26,0.35);
+    padding:16px;
+    color:#fffafc;
+}
+.modalHeader{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+    margin-bottom:12px;
+}
+.modalHeader h2{
+    margin:0;
+}
+.closeBtn{
+    border:none;
+    background:rgba(255,255,255,0.22);
+    color:white;
+    font-size:1.1rem;
+    border-radius:14px;
+    padding:10px 14px;
+    cursor:pointer;
+}
+.modalHeader p{
+    margin:4px 0 0;
+    opacity:0.94;
+}
+
+.dailyMini{
+    background:rgba(255,255,255,0.16);
+    border:1px solid rgba(255,255,255,0.22);
+    border-radius:18px;
+    padding:12px;
+    margin-bottom:12px;
+}
+.dailyTop{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+}
+.claimBtn,.buyBtn,.skillBtn{
+    width:100%;
+    border:none;
+    border-radius:14px;
+    padding:10px 12px;
+    margin-top:8px;
+    background:linear-gradient(135deg,#ff5eb4,#ff8fc7);
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    box-shadow:0 8px 18px rgba(130,27,75,0.2);
+}
+.claimBtn:disabled,.buyBtn:disabled,.skillBtn:disabled{
+    cursor:not-allowed;
+    opacity:0.6;
+}
+.shopGrid,.skillGrid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+}
+.item,.skill{
+    background:rgba(255,255,255,0.18);
+    border:1px solid rgba(255,255,255,0.22);
+    border-radius:18px;
+    padding:12px;
+}
+.item h4,.skill h4{
+    margin:0 0 6px;
+    font-size:1rem;
+}
+.item p,.skill p{
+    margin:4px 0;
+    font-size:0.9rem;
+    opacity:0.96;
+}
+.skillsSummary{
+    margin-bottom:10px;
+    font-weight:bold;
+    text-align:center;
+}
+.footerNote{
+    text-align:center;
+    margin:10px 0 2px;
+    opacity:0.86;
+    font-size:0.9rem;
+}
+.floatText{
+    position:fixed;
+    pointer-events:none;
+    z-index:60;
+    font-weight:bold;
+    text-shadow:0 2px 10px rgba(0,0,0,0.18);
+    animation:rise .95s ease forwards;
+}
+@keyframes rise{
+    0%{transform:translate(-50%,0) scale(.9);opacity:0;}
+    12%{opacity:1;}
+    100%{transform:translate(-50%,-70px) scale(1.12);opacity:0;}
+}
+.shake{animation:shake .2s linear;}
+@keyframes shake{
+    0%,100%{transform:translateX(0);}
+    25%{transform:translateX(-5px);}
+    50%{transform:translateX(5px);}
+    75%{transform:translateX(-3px);}
+}
+@media (max-width:900px){
+    .dashboard{grid-template-columns:repeat(2,minmax(0,1fr));}
+    .shopGrid,.skillGrid{grid-template-columns:1fr;}
+}
+@media (max-width:620px){
+    .dashboard{grid-template-columns:1fr 1fr;}
+    .progressMeta{flex-direction:column;align-items:center;text-align:center;}
+    .actionBtn{width:100%;}
+    .miniDivisionHead{flex-direction:column;align-items:flex-start;}
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="title">
+        <h1>🌸 Fruit Division Clicker 🌸</h1>
+        <p>Compact layout, pop-up upgrades, and a cleaner kawaii game screen ✨</p>
+    </div>
+
+    <div class="dashboard">
+        <div class="card stat">
+            <div class="label">🪙 Coins</div>
+            <div class="value" id="coinsStat">0</div>
+        </div>
+        <div class="card stat">
+            <div class="label">💥 Click Power</div>
+            <div class="value" id="clickStat">0</div>
+        </div>
+        <div class="card stat">
+            <div class="label">⚡ Coins / Sec</div>
+            <div class="value" id="cpsStat">0</div>
+        </div>
+        <div class="card stat">
+            <div class="label">🧠 Skill Points</div>
+            <div class="value" id="skillPointStat">0</div>
+        </div>
+        <div class="card stat">
+            <div class="label">📈 Pressure</div>
+            <div class="value" id="pressureStat">x1.00</div>
+        </div>
+    </div>
+
+    <div class="card mainCard">
+        <div class="badges">
+            <div class="badge" id="divisionBadge">Division 1</div>
+            <div class="badge" id="stageBadge">Level 1 / 20</div>
+            <div class="badge" id="rewardBadge">Reward: 0</div>
+        </div>
+
+        <h2 class="levelTitle" id="levelTitle">Loading...</h2>
+        <p class="subText" id="levelSubtitle">Tap the fruit to grow your kawaii empire 💗</p>
+
+        <div class="fruitWrap">
+            <button id="fruitButton" aria-label="Click fruit">
+                <div id="fruitEmoji">🍓</div>
+                <div id="fruitName">Strawberry</div>
+            </button>
+        </div>
+
+        <div class="progressBox">
+            <div class="progressBar"><div id="progressFill"></div></div>
+            <div class="progressMeta">
+                <div id="progressText">0 / 100</div>
+                <div id="bonusText">Crit 0% • Luck 0%</div>
+                <div id="multiplierText">Gain x1.00</div>
+            </div>
+        </div>
+
+        <div class="actionRow">
+            <button class="actionBtn" id="openShopBtn">🛒 Upgrades</button>
+            <button class="actionBtn" id="openSkillBtn">🧠 Skill Tree</button>
+        </div>
+
+        <div class="overviewBox">
+            <div class="overviewTitle">🗺️ Level Overview</div>
+            <div class="levelOverview" id="levelOverview"></div>
+        </div>
+    </div>
+
+    <div class="card feedCard">
+        <div class="feedTitle">✨ Game Feed</div>
+        <div class="messageList" id="messageList"></div>
+    </div>
+
+    <p class="footerNote">Your progress saves automatically on this device 💾</p>
+</div>
+
+<div class="modal" id="shopModal">
+    <div class="modalContent">
+        <div class="modalHeader">
+            <div>
+                <h2>🛒 Upgrades</h2>
+                <p>Repeatable upgrades with scaling prices</p>
+            </div>
+            <button class="closeBtn" id="closeShopBtn">✖</button>
+        </div>
+
+        <div class="dailyMini">
+            <div class="dailyTop">
+                <strong>🎁 Daily Reward</strong>
+                <span id="dailyTimer">Ready!</span>
+            </div>
+            <div id="dailyText" style="margin-top:6px;">Claim your cute coins once every 24 hours ✨</div>
+            <button class="claimBtn" id="claimDailyBtn">Claim Daily Reward</button>
+        </div>
+
+        <div class="shopGrid" id="shopGrid"></div>
+    </div>
+</div>
+
+<div class="modal" id="skillModal">
+    <div class="modalContent">
+        <div class="modalHeader">
+            <div>
+                <h2>🧠 Skill Tree</h2>
+                <p>Spend points you earn from progression</p>
+            </div>
+            <button class="closeBtn" id="closeSkillBtn">✖</button>
+        </div>
+
+        <div class="skillsSummary" id="skillsSummary">0 spent • 0 free</div>
+        <div class="skillGrid" id="skillGrid"></div>
+    </div>
+</div>
+
+<script>
+const SAVE_KEY = "fruitDivisionClicker_v2_scaling";
+
+const DIVISIONS = [
+    {
+        name:"Berry Meadow 🌸",
+        theme:["#ff8dc5","#ffd7eb"],
+        levels:[
+            {title:"Strawberry Seed", fruit:"🍓", fruitName:"Strawberry", target:100, reward:90},
+            {title:"Cherry Smile", fruit:"🍒", fruitName:"Cherry", target:220, reward:160},
+            {title:"Apple Pop", fruit:"🍎", fruitName:"Apple", target:420, reward:260},
+            {title:"Peach Puff", fruit:"🍑", fruitName:"Peach", target:700, reward:400},
+            {title:"Watermelon Wave", fruit:"🍉", fruitName:"Watermelon", target:1100, reward:600}
+        ]
+    },
+    {
+        name:"Tropical Bay 🌴",
+        theme:["#ffaf6f","#ffe6a8"],
+        levels:[
+            {title:"Banana Bounce", fruit:"🍌", fruitName:"Banana", target:1600, reward:850},
+            {title:"Pineapple Party", fruit:"🍍", fruitName:"Pineapple", target:2400, reward:1200},
+            {title:"Mango Magic", fruit:"🥭", fruitName:"Mango", target:3600, reward:1650},
+            {title:"Coconut Cloud", fruit:"🥥", fruitName:"Coconut", target:5200, reward:2300},
+            {title:"Orange Spark", fruit:"🍊", fruitName:"Orange", target:7400, reward:3200}
+        ]
+    },
+    {
+        name:"Moon Orchard 🌙",
+        theme:["#8e7dff","#d7d0ff"],
+        levels:[
+            {title:"Grape Glitter", fruit:"🍇", fruitName:"Grapes", target:10000, reward:4300},
+            {title:"Blueberry Dream", fruit:"🫐", fruitName:"Blueberry", target:13200, reward:5600},
+            {title:"Pear Prism", fruit:"🍐", fruitName:"Pear", target:17200, reward:7200},
+            {title:"Kiwi Kiss", fruit:"🥝", fruitName:"Kiwi", target:22000, reward:9000},
+            {title:"Lemon Beam", fruit:"🍋", fruitName:"Lemon", target:28000, reward:11200}
+        ]
+    },
+    {
+        name:"Royal Garden 👑",
+        theme:["#67c8ff","#d7f3ff"],
+        levels:[
+            {title:"Melon Crown", fruit:"🍈", fruitName:"Melon", target:35000, reward:13800},
+            {title:"Ruby Cherry", fruit:"🍒", fruitName:"Ruby Cherry", target:43000, reward:17000},
+            {title:"Golden Apple", fruit:"🍎", fruitName:"Golden Apple", target:52000, reward:21000},
+            {title:"Sakura Peach", fruit:"🍑", fruitName:"Sakura Peach", target:62000, reward:26000},
+            {title:"Cosmic Fruit Basket", fruit:"🌈", fruitName:"Cosmic Basket", target:75000, reward:32000}
+        ]
+    }
+];
+
+const LEVELS = DIVISIONS.flatMap((division, divisionIndex) =>
+    division.levels.map((level, levelIndex) => ({
+        ...level,
+        divisionIndex,
+        levelIndex,
+        absoluteIndex: divisionIndex * 5 + levelIndex
+    }))
+);
+
+const SHOP_ITEMS = [
+    {id:"tap_1", name:"Pink Fingertips", desc:"+1 click", basePrice:25, growth:1.18, type:"click", value:1},
+    {id:"tap_2", name:"Berry Gloves", desc:"+3 click", basePrice:80, growth:1.20, type:"click", value:3},
+    {id:"tap_3", name:"Jam Spoon", desc:"+8 click", basePrice:220, growth:1.22, type:"click", value:8},
+    {id:"tap_4", name:"Sparkle Nails", desc:"+18 click", basePrice:620, growth:1.24, type:"click", value:18},
+    {id:"tap_5", name:"Sakura Touch", desc:"+40 click", basePrice:1700, growth:1.26, type:"click", value:40},
+    {id:"tap_6", name:"Royal Tap", desc:"+95 click", basePrice:4600, growth:1.28, type:"click", value:95},
+
+    {id:"cps_1", name:"Tiny Bunny", desc:"+1 coin/sec", basePrice:35, growth:1.18, type:"cps", value:1},
+    {id:"cps_2", name:"Cute Robot", desc:"+4 coin/sec", basePrice:110, growth:1.20, type:"cps", value:4},
+    {id:"cps_3", name:"Watering Can", desc:"+10 coin/sec", basePrice:320, growth:1.22, type:"cps", value:10},
+    {id:"cps_4", name:"Juice Stand", desc:"+24 coin/sec", basePrice:900, growth:1.24, type:"cps", value:24},
+    {id:"cps_5", name:"Fruit Drone", desc:"+55 coin/sec", basePrice:2600, growth:1.26, type:"cps", value:55},
+    {id:"cps_6", name:"Rainbow Orchard", desc:"+130 coin/sec", basePrice:7200, growth:1.28, type:"cps", value:130},
+
+    {id:"crit_1", name:"Lucky Bell", desc:"+1.5% crit chance", basePrice:280, growth:1.30, type:"critChance", value:0.015},
+    {id:"crit_2", name:"Crystal Crown", desc:"+0.20 crit multiplier", basePrice:950, growth:1.32, type:"critMult", value:0.20},
+    {id:"crit_3", name:"Clover Basket", desc:"+2% luck chance", basePrice:600, growth:1.31, type:"luckChance", value:0.02},
+    {id:"crit_4", name:"Honey Charm", desc:"+3% luck chance", basePrice:1900, growth:1.33, type:"luckChance", value:0.03},
+
+    {id:"mult_1", name:"Coin Magnet", desc:"+8% all gain", basePrice:1200, growth:1.34, type:"gainMult", value:0.08},
+    {id:"mult_2", name:"Galaxy Jam", desc:"+12% all gain", basePrice:4200, growth:1.36, type:"gainMult", value:0.12},
+    {id:"mult_3", name:"Sun Sticker", desc:"+10% level reward", basePrice:1600, growth:1.33, type:"rewardMult", value:0.10},
+    {id:"mult_4", name:"Moon Syrup", desc:"+18% level reward", basePrice:5400, growth:1.35, type:"rewardMult", value:0.18},
+
+    {id:"special_1", name:"Golden Basket", desc:"+250 click", basePrice:15000, growth:1.29, type:"click", value:250},
+    {id:"special_2", name:"Cloud Factory", desc:"+350 coin/sec", basePrice:22000, growth:1.29, type:"cps", value:350},
+    {id:"special_3", name:"Royal Magnet", desc:"+20% all gain", basePrice:30000, growth:1.38, type:"gainMult", value:0.20},
+    {id:"special_4", name:"Heaven Bell", desc:"+0.35 crit multiplier", basePrice:18000, growth:1.35, type:"critMult", value:0.35}
+];
+
+const SKILLS = {
+    clickMastery: {name:"Click Mastery", emoji:"🖱️", max:5, desc:"+2 click power each level"},
+    autoHarvest: {name:"Auto Harvest", emoji:"🌱", max:5, desc:"+2 coin/sec each level"},
+    critBloom: {name:"Crit Bloom", emoji:"💥", max:5, desc:"+4% crit chance each level"},
+    luckyBasket: {name:"Lucky Basket", emoji:"🍀", max:4, desc:"+5% luck chance each level"},
+    bargainMagic: {name:"Bargain Magic", emoji:"🛍️", max:5, desc:"-4% shop prices each level"},
+    sunriseBlessing: {name:"Sunrise Blessing", emoji:"🌞", max:4, desc:"+25% daily reward each level"}
+};
+
+let state = {
+    coins:0,
+    completedLevels:0,
+    currentProgress:0,
+    endlessStage:0,
+    shopLevels:{},
+    skills:{
+        clickMastery:0,
+        autoHarvest:0,
+        critBloom:0,
+        luckyBasket:0,
+        bargainMagic:0,
+        sunriseBlessing:0
+    },
+    lastDailyClaim:0,
+    dailyStreak:0,
+    passiveBuffer:0,
+    messages:["Welcome to your kawaii fruit empire 🌸"]
+};
+
+const coinsStat = document.getElementById("coinsStat");
+const clickStat = document.getElementById("clickStat");
+const cpsStat = document.getElementById("cpsStat");
+const skillPointStat = document.getElementById("skillPointStat");
+const pressureStat = document.getElementById("pressureStat");
+const divisionBadge = document.getElementById("divisionBadge");
+const stageBadge = document.getElementById("stageBadge");
+const rewardBadge = document.getElementById("rewardBadge");
+const levelTitle = document.getElementById("levelTitle");
+const levelSubtitle = document.getElementById("levelSubtitle");
+const fruitEmoji = document.getElementById("fruitEmoji");
+const fruitName = document.getElementById("fruitName");
+const fruitButton = document.getElementById("fruitButton");
+const progressFill = document.getElementById("progressFill");
+const progressText = document.getElementById("progressText");
+const bonusText = document.getElementById("bonusText");
+const multiplierText = document.getElementById("multiplierText");
+const levelOverview = document.getElementById("levelOverview");
+const shopGrid = document.getElementById("shopGrid");
+const skillGrid = document.getElementById("skillGrid");
+const dailyTimer = document.getElementById("dailyTimer");
+const dailyText = document.getElementById("dailyText");
+const claimDailyBtn = document.getElementById("claimDailyBtn");
+const messageList = document.getElementById("messageList");
+const skillsSummary = document.getElementById("skillsSummary");
+
+const shopModal = document.getElementById("shopModal");
+const skillModal = document.getElementById("skillModal");
+const openShopBtn = document.getElementById("openShopBtn");
+const openSkillBtn = document.getElementById("openSkillBtn");
+const closeShopBtn = document.getElementById("closeShopBtn");
+const closeSkillBtn = document.getElementById("closeSkillBtn");
+
+function formatNumber(num){
+    return new Intl.NumberFormat("en-US",{maximumFractionDigits:0}).format(Math.floor(num));
+}
+function formatPercent(value){
+    return (value * 100).toFixed(value < 0.1 ? 1 : 0) + "%";
+}
+function getOwned(id){
+    return state.shopLevels[id] || 0;
+}
+function getTotalShopLevels(){
+    return Object.values(state.shopLevels).reduce((sum,n)=>sum+n,0);
+}
+function getEconomyPressure(){
+    const stagePart = Math.pow(1.06, state.completedLevels);
+    const shopPart = Math.pow(1.045, getTotalShopLevels());
+    const endlessPart = Math.pow(1.12, state.endlessStage);
+    return stagePart * shopPart * endlessPart;
+}
+function getCurrentLevel(){
+    if(state.completedLevels < LEVELS.length){
+        const raw = LEVELS[state.completedLevels];
+        const targetScale = Math.pow(1.08, state.completedLevels);
+        const rewardScale = Math.pow(1.06, state.completedLevels);
+        return {
+            ...raw,
+            target:Math.floor(raw.target * targetScale),
+            reward:Math.floor(raw.reward * rewardScale)
+        };
+    }
+    const last = LEVELS[LEVELS.length - 1];
+    const baseStageScale = Math.pow(1.08, LEVELS.length);
+    return {
+        title:`Infinity Basket ${state.endlessStage + 1}`,
+        fruit:"🌈",
+        fruitName:"Endless Fruit Basket",
+        divisionIndex:DIVISIONS.length - 1,
+        target:Math.floor(last.target * baseStageScale * Math.pow(1.22, state.endlessStage + 1)),
+        reward:Math.floor(last.reward * Math.pow(1.18, state.endlessStage + 1))
+    };
+}
+function getEarnedSkillPoints(){
+    return Math.floor(state.completedLevels / 2) + Math.floor(state.completedLevels / 5);
+}
+function getSpentSkillPoints(){
+    return Object.values(state.skills).reduce((sum,value)=>sum+value,0);
+}
+function getAvailableSkillPoints(){
+    return getEarnedSkillPoints() - getSpentSkillPoints();
+}
+function getStats(){
+    let click = 1 + state.skills.clickMastery * 2;
+    let cps = state.skills.autoHarvest * 2;
+    let critChance = 0.05 + state.skills.critBloom * 0.04;
+    let critMult = 2;
+    let luckChance = state.skills.luckyBasket * 0.05;
+    let gainMult = 1;
+    let rewardMult = 1;
+    const shopDiscount = state.skills.bargainMagic * 0.04;
+    const dailyMult = 1 + state.skills.sunriseBlessing * 0.25;
+
+    for(const item of SHOP_ITEMS){
+        const amount = getOwned(item.id);
+        if(amount <= 0) continue;
+        if(item.type === "click") click += item.value * amount;
+        else if(item.type === "cps") cps += item.value * amount;
+        else if(item.type === "critChance") critChance += item.value * amount;
+        else if(item.type === "critMult") critMult += item.value * amount;
+        else if(item.type === "luckChance") luckChance += item.value * amount;
+        else if(item.type === "gainMult") gainMult += item.value * amount;
+        else if(item.type === "rewardMult") rewardMult += item.value * amount;
+    }
+
+    critChance = Math.min(0.95, critChance);
+    luckChance = Math.min(0.85, luckChance);
+
+    return {click,cps,critChance,critMult,luckChance,gainMult,rewardMult,shopDiscount,dailyMult};
+}
+function getEffectivePrice(item){
+    const owned = getOwned(item.id);
+    const discount = 1 - (state.skills.bargainMagic * 0.04);
+    const price = item.basePrice * Math.pow(item.growth, owned) * getEconomyPressure() * discount;
+    return Math.max(1, Math.floor(price));
+}
+function pushMessage(text){
+    state.messages.unshift(text);
+    state.messages = state.messages.slice(0,4);
+}
+function showFloat(text,x,y,size=24){
+    const node = document.createElement("div");
+    node.className = "floatText";
+    node.textContent = text;
+    node.style.left = x + "px";
+    node.style.top = y + "px";
+    node.style.fontSize = size + "px";
+    document.body.appendChild(node);
+    setTimeout(()=>node.remove(),950);
+}
+function animateCrit(){
+    fruitButton.classList.remove("shake");
+    void fruitButton.offsetWidth;
+    fruitButton.classList.add("shake");
+}
+function getTapPoint(event){
+    const rect = fruitButton.getBoundingClientRect();
+    return {
+        x: event?.clientX ?? rect.left + rect.width / 2,
+        y: event?.clientY ?? rect.top + rect.height / 2
+    };
+}
+function awardProgressAndCoins(amount){
+    state.coins += amount;
+    state.currentProgress += amount;
+    checkLevelCompletion();
+}
+function clickFruit(event){
+    const stats = getStats();
+    let gain = stats.click;
+    let label = `+${formatNumber(gain)}`;
+
+    const crit = Math.random() < stats.critChance;
+    if(crit){
+        gain *= stats.critMult;
+        label = `CRIT! +${formatNumber(gain)}`;
+        animateCrit();
+    }
+
+    const lucky = Math.random() < stats.luckChance;
+    if(lucky){
+        const bonus = Math.max(1, Math.floor(gain * 0.5));
+        gain += bonus;
+        label += ` 🍀`;
+    }
+
+    gain = Math.max(1, Math.floor(gain * stats.gainMult));
+    const point = getTapPoint(event);
+    showFloat(label, point.x, point.y, crit ? 28 : 24);
+    awardProgressAndCoins(gain);
+    render();
+}
+fruitButton.addEventListener("click", clickFruit);
+
+function checkLevelCompletion(){
+    let loopGuard = 0;
+    while(loopGuard < 12){
+        const current = getCurrentLevel();
+        if(state.currentProgress < current.target) break;
+
+        state.currentProgress -= current.target;
+        const stats = getStats();
+        const reward = Math.floor(current.reward * stats.rewardMult);
+        state.coins += reward;
+
+        if(state.completedLevels < LEVELS.length){
+            state.completedLevels += 1;
+            pushMessage(`✅ ${current.title} cleared! Reward: ${formatNumber(reward)} coins`);
+
+            if(state.completedLevels < LEVELS.length && state.completedLevels % 5 === 0){
+                const unlockedDivision = DIVISIONS[Math.floor(state.completedLevels / 5)];
+                if(unlockedDivision){
+                    pushMessage(`🌸 New division unlocked: ${unlockedDivision.name}`);
+                }
+            }
+
+            if(state.completedLevels === LEVELS.length){
+                pushMessage("👑 All 20 levels cleared! Endless mode unlocked!");
+            }
+        }else{
+            state.endlessStage += 1;
+            pushMessage(`🌈 Endless stage ${state.endlessStage} cleared! Reward: ${formatNumber(reward)} coins`);
+        }
+        loopGuard += 1;
+    }
+}
+function buyItem(id){
+    const item = SHOP_ITEMS.find(entry => entry.id === id);
+    if(!item) return;
+    const price = getEffectivePrice(item);
+    if(state.coins < price){
+        pushMessage(`💸 Not enough coins for ${item.name}`);
+        render();
+        return;
+    }
+    state.coins -= price;
+    state.shopLevels[id] = getOwned(id) + 1;
+    pushMessage(`🛍️ ${item.name} upgraded to Lv.${state.shopLevels[id]}`);
+    render();
+}
+function buySkill(id){
+    const skill = SKILLS[id];
+    if(!skill) return;
+    if(getAvailableSkillPoints() <= 0){
+        pushMessage("🧠 You need more skill points");
+        render();
+        return;
+    }
+    if(state.skills[id] >= skill.max){
+        pushMessage(`${skill.name} is already maxed out ✨`);
+        render();
+        return;
+    }
+    state.skills[id] += 1;
+    pushMessage(`🧠 ${skill.name} leveled up to ${state.skills[id]}`);
+    render();
+}
+function getDailyInfo(){
+    const cooldown = 24 * 60 * 60 * 1000;
+    const now = Date.now();
+    const elapsed = now - (state.lastDailyClaim || 0);
+    const stats = getStats();
+    const base = 250 + state.completedLevels * 160 + Math.floor(getTotalShopLevels() * 35);
+    const streakBonus = state.dailyStreak * 90;
+    const reward = Math.floor((base + streakBonus) * stats.dailyMult * stats.rewardMult);
+    return {
+        ready: elapsed >= cooldown,
+        remaining: Math.max(0, cooldown - elapsed),
+        reward
+    };
+}
+function claimDailyReward(){
+    const info = getDailyInfo();
+    if(!info.ready){
+        pushMessage("⏳ Daily reward is not ready yet");
+        render();
+        return;
+    }
+    const now = Date.now();
+    if(state.lastDailyClaim && now - state.lastDailyClaim <= 48 * 60 * 60 * 1000){
+        state.dailyStreak += 1;
+    }else{
+        state.dailyStreak = 1;
+    }
+    state.lastDailyClaim = now;
+    state.coins += info.reward;
+    showFloat(`🎁 +${formatNumber(info.reward)}`, window.innerWidth / 2, 120, 30);
+    pushMessage(`🎁 Daily reward claimed! Streak: ${state.dailyStreak}`);
+    render();
+}
+claimDailyBtn.addEventListener("click", claimDailyReward);
+
+function formatTime(ms){
+    const totalSeconds = Math.ceil(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    return `${String(hours).padStart(2,"0")}:${String(minutes).padStart(2,"0")}:${String(seconds).padStart(2,"0")}`;
+}
+
+function renderLevelOverview(){
+    levelOverview.innerHTML = "";
+    DIVISIONS.forEach((division,divIndex)=>{
+        const block = document.createElement("div");
+        block.className = "miniDivision";
+
+        const completedInDivision = Math.max(0, Math.min(5, state.completedLevels - divIndex * 5));
+
+        const head = document.createElement("div");
+        head.className = "miniDivisionHead";
+        head.innerHTML = `<strong>${division.name}</strong><span>${completedInDivision}/5 cleared</span>`;
+        block.appendChild(head);
+
+        const dots = document.createElement("div");
+        dots.className = "miniDots";
+
+        division.levels.forEach((level,idx)=>{
+            const absoluteIndex = divIndex * 5 + idx;
+            const dot = document.createElement("div");
+            let cls = "miniDot";
+            if(absoluteIndex < state.completedLevels) cls += " done";
+            else if(absoluteIndex === state.completedLevels && state.completedLevels < LEVELS.length) cls += " active";
+            else cls += " locked";
+            dot.className = cls;
+            dot.innerHTML = `<div>${level.fruit}</div><div>${idx+1}</div>`;
+            dots.appendChild(dot);
+        });
+
+        block.appendChild(dots);
+        levelOverview.appendChild(block);
+    });
+}
+
+function renderShop(){
+    shopGrid.innerHTML = "";
+    SHOP_ITEMS.forEach(item=>{
+        const price = getEffectivePrice(item);
+        const owned = getOwned(item.id);
+
+        const card = document.createElement("div");
+        card.className = "item";
+        card.innerHTML = `
+            <h4>${item.name}</h4>
+            <p>${item.desc}</p>
+            <p>Owned: ${owned}</p>
+            <p>Next cost: ${formatNumber(price)} 🪙</p>
+        `;
+
+        const button = document.createElement("button");
+        button.className = "buyBtn";
+        button.textContent = "Upgrade";
+        button.disabled = state.coins < price;
+        button.addEventListener("click", ()=>buyItem(item.id));
+        card.appendChild(button);
+
+        shopGrid.appendChild(card);
+    });
+}
+
+function renderSkills(){
+    skillGrid.innerHTML = "";
+    Object.entries(SKILLS).forEach(([id,skill])=>{
+        const current = state.skills[id];
+        const card = document.createElement("div");
+        card.className = "skill";
+        card.innerHTML = `
+            <h4>${skill.emoji} ${skill.name}</h4>
+            <p>${skill.desc}</p>
+            <p>Level ${current} / ${skill.max}</p>
+        `;
+        const button = document.createElement("button");
+        button.className = "skillBtn";
+        button.textContent = current >= skill.max ? "Maxed" : "Spend 1 point";
+        button.disabled = current >= skill.max || getAvailableSkillPoints() <= 0;
+        button.addEventListener("click", ()=>buySkill(id));
+        card.appendChild(button);
+        skillGrid.appendChild(card);
+    });
+}
+
+function renderMessages(){
+    messageList.innerHTML = "";
+    state.messages.forEach(text=>{
+        const msg = document.createElement("div");
+        msg.className = "message";
+        msg.textContent = text;
+        messageList.appendChild(msg);
+    });
+}
+function renderDaily(){
+    const info = getDailyInfo();
+    dailyTimer.textContent = info.ready ? "Ready!" : formatTime(info.remaining);
+    dailyText.textContent = `Reward: ${formatNumber(info.reward)} coins • Streak: ${state.dailyStreak}`;
+    claimDailyBtn.disabled = !info.ready;
+}
+function render(){
+    const current = getCurrentLevel();
+    const division = DIVISIONS[current.divisionIndex] || DIVISIONS[DIVISIONS.length - 1];
+    const stats = getStats();
+    const progressPercent = Math.min(100, (state.currentProgress / current.target) * 100);
+    const overallIndex = Math.min(LEVELS.length, state.completedLevels + 1);
+
+    document.documentElement.style.setProperty("--bg1", division.theme[0]);
+    document.documentElement.style.setProperty("--bg2", division.theme[1]);
+
+    coinsStat.textContent = formatNumber(state.coins);
+    clickStat.textContent = formatNumber(Math.floor(stats.click * stats.gainMult));
+    cpsStat.textContent = formatNumber(Math.floor(stats.cps * stats.gainMult));
+    skillPointStat.textContent = formatNumber(getAvailableSkillPoints());
+    pressureStat.textContent = "x" + getEconomyPressure().toFixed(2);
+
+    divisionBadge.textContent = division.name;
+    stageBadge.textContent = state.completedLevels < LEVELS.length ? `Level ${overallIndex} / ${LEVELS.length}` : `Endless ${state.endlessStage + 1}`;
+    rewardBadge.textContent = `Reward: ${formatNumber(Math.floor(current.reward * stats.rewardMult))}`;
+
+    levelTitle.textContent = current.title;
+    levelSubtitle.textContent = state.completedLevels < LEVELS.length
+        ? `Collect ${formatNumber(current.target)} to finish this level 🌟`
+        : "You beat every division — now the rainbow basket never ends 🌈";
+
+    fruitEmoji.textContent = current.fruit;
+    fruitName.textContent = current.fruitName;
+
+    progressFill.style.width = progressPercent + "%";
+    progressText.textContent = `${formatNumber(state.currentProgress)} / ${formatNumber(current.target)}`;
+    bonusText.textContent = `Crit ${formatPercent(stats.critChance)} • Luck ${formatPercent(stats.luckChance)}`;
+    multiplierText.textContent = `Gain x${stats.gainMult.toFixed(2)} • Crit x${stats.critMult.toFixed(2)}`;
+
+    skillsSummary.textContent = `${getSpentSkillPoints()} spent • ${getAvailableSkillPoints()} free`;
+
+    renderLevelOverview();
+    renderShop();
+    renderSkills();
+    renderDaily();
+    renderMessages();
+    saveGame();
+}
+
+function saveGame(){
+    localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+}
+function loadGame(){
+    try{
+        const raw = localStorage.getItem(SAVE_KEY);
+        if(!raw) return;
+        const parsed = JSON.parse(raw);
+        state = {
+            ...state,
+            ...parsed,
+            shopLevels:{...state.shopLevels, ...(parsed.shopLevels || {})},
+            skills:{...state.skills, ...(parsed.skills || {})},
+            messages:Array.isArray(parsed.messages) && parsed.messages.length ? parsed.messages.slice(0,4) : state.messages
+        };
+    }catch(error){
+        console.error("Save load failed", error);
+    }
+}
+
+function gameTick(){
+    const stats = getStats();
+    const perTick = (stats.cps * stats.gainMult) / 4;
+    state.passiveBuffer += perTick;
+
+    let changed = false;
+    if(state.passiveBuffer >= 1){
+        const whole = Math.floor(state.passiveBuffer);
+        state.passiveBuffer -= whole;
+        awardProgressAndCoins(whole);
+        changed = true;
+    }
+
+    if(changed){
+        render();
+    }else{
+        renderDaily();
+        coinsStat.textContent = formatNumber(state.coins);
+        progressText.textContent = `${formatNumber(state.currentProgress)} / ${formatNumber(getCurrentLevel().target)}`;
+        progressFill.style.width = Math.min(100, (state.currentProgress / getCurrentLevel().target) * 100) + "%";
+        pressureStat.textContent = "x" + getEconomyPressure().toFixed(2);
+    }
+}
+
+function openModal(modal){
+    modal.classList.add("show");
+}
+function closeModal(modal){
+    modal.classList.remove("show");
+}
+
+openShopBtn.addEventListener("click", ()=>openModal(shopModal));
+openSkillBtn.addEventListener("click", ()=>openModal(skillModal));
+closeShopBtn.addEventListener("click", ()=>closeModal(shopModal));
+closeSkillBtn.addEventListener("click", ()=>closeModal(skillModal));
+
+shopModal.addEventListener("click", (e)=>{
+    if(e.target === shopModal) closeModal(shopModal);
+});
+skillModal.addEventListener("click", (e)=>{
+    if(e.target === skillModal) closeModal(skillModal);
+});
+document.addEventListener("keydown", (e)=>{
+    if(e.key === "Escape"){
+        closeModal(shopModal);
+        closeModal(skillModal);
+    }
+});
+
+loadGame();
+render();
+setInterval(gameTick, 250);
+setInterval(saveGame, 3000);
+window.addEventListener("beforeunload", saveGame);
+</script>
+</body>
+</html>
