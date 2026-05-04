@@ -9,7 +9,7 @@ body{
   margin:0;
   font-family:Arial;
   color:white;
-  background:linear-gradient(135deg,#0b1020,#0a0f1a);
+  background:#0b0f1a;
   overflow:hidden;
 }
 
@@ -18,19 +18,31 @@ header{
   text-align:center;
   padding:20px;
 }
-header h1{
-  margin:0;
-  font-size:40px;
-}
 
-/* HUB GRID (FIXED LIKE YOUR IMAGE) */
+/* 🎮 CUSTOM STEAM-LIKE LAYOUT */
 .hub{
   display:grid;
-  grid-template-columns:repeat(4, 220px);
+
+  /* custom layout like you want */
+  grid-template-columns:220px 220px 220px;
+  grid-template-areas:
+    "g1 g2 g3"
+    "g4 .  . "
+    "g5 .  . ";
+
   gap:20px;
   justify-content:center;
   padding:40px;
 }
+
+/* assign positions */
+#game1{grid-area:g1;}
+#game2{grid-area:g2;}
+#game3{grid-area:g3;}
+#game4{grid-area:g4;}
+
+/* optional 5th slot if you add later */
+#game5{grid-area:g5;}
 
 /* 🎮 CARD */
 .card{
@@ -42,15 +54,15 @@ header h1{
   background-position:center;
   cursor:pointer;
   overflow:hidden;
-  transition:0.2s;
+  transition:0.15s;
 
-  border:2px solid rgba(0,255,255,0.5);
-  box-shadow:0 0 12px rgba(0,255,255,0.25);
+  border:2px solid rgba(0,255,255,0.4);
+  box-shadow:0 0 12px rgba(0,255,255,0.2);
 }
 
 .card:hover{
-  transform:scale(1.06);
-  box-shadow:0 0 25px rgba(0,255,255,0.8);
+  transform:scale(1.05);
+  box-shadow:0 0 22px rgba(0,255,255,0.7);
 }
 
 .overlay{
@@ -65,7 +77,6 @@ header h1{
   left:10px;
   margin:0;
   font-size:16px;
-  z-index:2;
 }
 
 .stats{
@@ -74,7 +85,6 @@ header h1{
   left:10px;
   font-size:12px;
   color:#9ffcff;
-  z-index:2;
 }
 
 /* 🎮 GAME SCREEN */
@@ -91,7 +101,6 @@ header h1{
   padding:10px;
   display:flex;
   justify-content:space-between;
-  align-items:center;
 }
 
 button{
@@ -109,7 +118,7 @@ iframe{
   border:none;
 }
 
-/* ⏳ LOADING (FIXED CIRCLE) */
+/* ⏳ LOADING (STATIC — NO ANIMATION FIXED) */
 #loading{
   position:fixed;
   inset:0;
@@ -127,11 +136,6 @@ iframe{
   border:6px solid #222;
   border-top:6px solid #00ffcc;
   border-radius:50%;
-  animation:spin 1s linear infinite;
-}
-
-@keyframes spin{
-  100%{transform:rotate(360deg);}
 }
 
 #loadingText{
@@ -150,28 +154,32 @@ iframe{
 
 <div class="hub">
 
-  <div class="card" style="background-image:url(logochess.png)"
+  <div class="card" id="game1"
+    style="background-image:url(logochess.png)"
     onclick="openGame('game1.html','Chess','chess')">
     <div class="overlay"></div>
     <h2>♟ Chess</h2>
     <div class="stats" id="chessStats"></div>
   </div>
 
-  <div class="card" style="background-image:url(logocheckers.png)"
+  <div class="card" id="game2"
+    style="background-image:url(logocheckers.png)"
     onclick="openGame('game2.html','Checkers','checkers')">
     <div class="overlay"></div>
     <h2>⚫ Checkers</h2>
     <div class="stats" id="checkersStats"></div>
   </div>
 
-  <div class="card" style="background-image:url(logocrosssum.png)"
+  <div class="card" id="game3"
+    style="background-image:url(logocrosssum.png)"
     onclick="openGame('game3.html','Cross Sums','cross')">
     <div class="overlay"></div>
     <h2>🧠 Cross Sums</h2>
     <div class="stats" id="crossStats"></div>
   </div>
 
-  <div class="card" style="background-image:url(fruit.png)"
+  <div class="card" id="game4"
+    style="background-image:url(fruit.png)"
     onclick="openGame('fruit.html','Fruit Clicker','fruit')">
     <div class="overlay"></div>
     <h2>🍓 Fruit Clicker</h2>
@@ -234,7 +242,7 @@ function openGame(file,title,key){
       updateUI();
     },1000);
 
-  },1000);
+  },900);
 }
 
 function closeGame(){
