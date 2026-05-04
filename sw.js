@@ -9,7 +9,8 @@ const ASSETS = [
   "./elevator.mp3",
   "./logochess.png",
   "./logocheckers.png",
-  "./logocrosssum.png"
+  "./logocrosssum.png",
+  ",/fruit.png"
 ];
 
 self.addEventListener("install", event => {
