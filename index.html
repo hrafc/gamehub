@@ -9,25 +9,8 @@ body{
   margin:0;
   font-family:Arial;
   color:white;
+  background:linear-gradient(135deg,#0b1020,#0a0f1a);
   overflow:hidden;
-  background:#0b0f1a;
-}
-
-/* 🌌 NEON BACKGROUND */
-body::before{
-  content:"";
-  position:fixed;
-  inset:-200px;
-  background:radial-gradient(circle at 20% 20%, #00ffcc33, transparent 40%),
-             radial-gradient(circle at 80% 70%, #ff00ff33, transparent 40%),
-             radial-gradient(circle at 50% 50%, #00aaff33, transparent 50%);
-  animation:moveBg 12s infinite linear;
-  z-index:-1;
-}
-
-@keyframes moveBg{
-  0%{transform:rotate(0deg) scale(1);}
-  100%{transform:rotate(360deg) scale(1.2);}
 }
 
 /* HEADER */
@@ -40,13 +23,13 @@ header h1{
   font-size:40px;
 }
 
-/* HUB */
+/* HUB GRID (FIXED LIKE YOUR IMAGE) */
 .hub{
-  display:flex;
-  justify-content:center;
+  display:grid;
+  grid-template-columns:repeat(4, 220px);
   gap:20px;
-  flex-wrap:wrap;
-  padding:30px;
+  justify-content:center;
+  padding:40px;
 }
 
 /* 🎮 CARD */
@@ -59,18 +42,15 @@ header h1{
   background-position:center;
   cursor:pointer;
   overflow:hidden;
-  transition:0.25s;
-  display:flex;
-  align-items:flex-end;
-  padding:12px;
+  transition:0.2s;
 
   border:2px solid rgba(0,255,255,0.5);
-  box-shadow:0 0 15px rgba(0,255,255,0.3);
+  box-shadow:0 0 12px rgba(0,255,255,0.25);
 }
 
 .card:hover{
-  transform:scale(1.08);
-  box-shadow:0 0 25px rgba(0,255,255,0.9);
+  transform:scale(1.06);
+  box-shadow:0 0 25px rgba(0,255,255,0.8);
 }
 
 .overlay{
@@ -80,17 +60,21 @@ header h1{
 }
 
 .card h2{
-  position:relative;
+  position:absolute;
+  bottom:10px;
+  left:10px;
   margin:0;
-  font-size:18px;
+  font-size:16px;
   z-index:2;
 }
 
 .stats{
-  position:relative;
-  z-index:2;
+  position:absolute;
+  bottom:30px;
+  left:10px;
   font-size:12px;
   color:#9ffcff;
+  z-index:2;
 }
 
 /* 🎮 GAME SCREEN */
@@ -125,11 +109,11 @@ iframe{
   border:none;
 }
 
-/* ⏳ LOADING SCREEN */
+/* ⏳ LOADING (FIXED CIRCLE) */
 #loading{
   position:fixed;
   inset:0;
-  background:black;
+  background:rgba(0,0,0,0.9);
   display:none;
   flex-direction:column;
   justify-content:center;
@@ -137,7 +121,6 @@ iframe{
   z-index:999;
 }
 
-/* 🔵 SPINNER CIRCLE (FIXED) */
 .loader{
   width:70px;
   height:70px;
@@ -197,13 +180,13 @@ iframe{
 
 </div>
 
-<!-- ⏳ LOADING -->
+<!-- LOADING -->
 <div id="loading">
   <div class="loader"></div>
   <div id="loadingText">Loading game...</div>
 </div>
 
-<!-- 🎮 GAME -->
+<!-- GAME -->
 <div id="gameScreen">
   <div id="topbar">
     <span id="title">Game</span>
@@ -214,7 +197,6 @@ iframe{
 
 <script>
 
-/* 💾 SAVE */
 let stats = JSON.parse(localStorage.getItem("gameStats")) || {
   chess:{time:0},
   checkers:{time:0},
@@ -222,23 +204,17 @@ let stats = JSON.parse(localStorage.getItem("gameStats")) || {
   fruit:{time:0}
 };
 
-let activeGame = null;
-let timer = null;
+let timer=null;
 
-/* 📊 UI */
 function updateUI(){
-  document.getElementById("chessStats").innerText = `⏱ ${stats.chess.time}s`;
-  document.getElementById("checkersStats").innerText = `⏱ ${stats.checkers.time}s`;
-  document.getElementById("crossStats").innerText = `⏱ ${stats.cross.time}s`;
-  document.getElementById("fruitStats").innerText = `⏱ ${stats.fruit.time}s`;
-
-  localStorage.setItem("gameStats", JSON.stringify(stats));
+  document.getElementById("chessStats").innerText=`⏱ ${stats.chess.time}s`;
+  document.getElementById("checkersStats").innerText=`⏱ ${stats.checkers.time}s`;
+  document.getElementById("crossStats").innerText=`⏱ ${stats.cross.time}s`;
+  document.getElementById("fruitStats").innerText=`⏱ ${stats.fruit.time}s`;
+  localStorage.setItem("gameStats",JSON.stringify(stats));
 }
 
-/* 🎮 OPEN GAME */
 function openGame(file,title,key){
-
-  activeGame = key;
 
   document.getElementById("loading").style.display="flex";
 
@@ -253,30 +229,25 @@ function openGame(file,title,key){
     document.getElementById("frame").src=file;
     document.getElementById("title").innerText=title;
 
-    timer = setInterval(()=>{
+    timer=setInterval(()=>{
       stats[key].time++;
       updateUI();
     },1000);
 
-  },1200);
+  },1000);
 }
 
-/* 🔙 CLOSE */
 function closeGame(){
   clearInterval(timer);
-  timer=null;
 
   document.getElementById("gameScreen").style.display="none";
-  document.querySelector(".hub").style.display="flex";
+  document.querySelector(".hub").style.display="grid";
   document.querySelector("header").style.display="block";
 
   document.getElementById("frame").src="";
-  activeGame=null;
-
   updateUI();
 }
 
-/* INIT */
 updateUI();
 
 </script>
