@@ -19,32 +19,25 @@ header{
   padding:20px;
 }
 
-/* 🎮 CUSTOM STEAM-LIKE LAYOUT */
+/* HUB LAYOUT */
 .hub{
   display:grid;
-
-  /* custom layout like you want */
   grid-template-columns:220px 220px 220px;
   grid-template-areas:
     "g1 g2 g3"
-    "g4 .  . "
-    "g5 .  . ";
-
+    "g4 g5 . ";
   gap:20px;
   justify-content:center;
   padding:40px;
 }
 
-/* assign positions */
 #game1{grid-area:g1;}
 #game2{grid-area:g2;}
 #game3{grid-area:g3;}
 #game4{grid-area:g4;}
-
-/* optional 5th slot if you add later */
 #game5{grid-area:g5;}
 
-/* 🎮 CARD */
+/* CARD */
 .card{
   width:220px;
   height:200px;
@@ -87,7 +80,7 @@ header{
   color:#9ffcff;
 }
 
-/* 🎮 GAME SCREEN */
+/* GAME SCREEN */
 #gameScreen{
   position:fixed;
   inset:0;
@@ -118,7 +111,7 @@ iframe{
   border:none;
 }
 
-/* ⏳ LOADING (STATIC — NO ANIMATION FIXED) */
+/* LOADING */
 #loading{
   position:fixed;
   inset:0;
@@ -186,6 +179,15 @@ iframe{
     <div class="stats" id="fruitStats"></div>
   </div>
 
+  <!-- 🃏 UNO ADDED -->
+  <div class="card" id="game5"
+    style="background-image:url(unologo.png)"
+    onclick="openGame('uno.html','UNO Deluxe','uno')">
+    <div class="overlay"></div>
+    <h2>🃏 UNO Deluxe</h2>
+    <div class="stats" id="unoStats"></div>
+  </div>
+
 </div>
 
 <!-- LOADING -->
@@ -209,7 +211,8 @@ let stats = JSON.parse(localStorage.getItem("gameStats")) || {
   chess:{time:0},
   checkers:{time:0},
   cross:{time:0},
-  fruit:{time:0}
+  fruit:{time:0},
+  uno:{time:0}
 };
 
 let timer=null;
@@ -219,6 +222,8 @@ function updateUI(){
   document.getElementById("checkersStats").innerText=`⏱ ${stats.checkers.time}s`;
   document.getElementById("crossStats").innerText=`⏱ ${stats.cross.time}s`;
   document.getElementById("fruitStats").innerText=`⏱ ${stats.fruit.time}s`;
+  document.getElementById("unoStats").innerText=`⏱ ${stats.uno.time}s`;
+
   localStorage.setItem("gameStats",JSON.stringify(stats));
 }
 
