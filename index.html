@@ -9,7 +9,7 @@ body{
   margin:0;
   font-family:Arial;
   color:white;
-  background:#0b0f1a;
+  background:radial-gradient(circle at top,#0f172a,#0b0f1a);
   overflow:hidden;
 }
 
@@ -31,37 +31,36 @@ header{
   padding:40px;
 }
 
-#game1{grid-area:g1;}
-#game2{grid-area:g2;}
-#game3{grid-area:g3;}
-#game4{grid-area:g4;}
-#game5{grid-area:g5;}
-
-/* CARD */
+/* CARDS (✨ improved graphics only) */
 .card{
   width:220px;
   height:200px;
-  border-radius:16px;
+  border-radius:18px;
   position:relative;
   background-size:cover;
   background-position:center;
   cursor:pointer;
   overflow:hidden;
-  transition:0.15s;
+  transition:0.25s ease;
 
-  border:2px solid rgba(0,255,255,0.4);
-  box-shadow:0 0 12px rgba(0,255,255,0.2);
+  border:1px solid rgba(0,255,255,0.25);
+  box-shadow:
+    0 0 12px rgba(0,255,255,0.15),
+    inset 0 0 30px rgba(255,255,255,0.03);
+  backdrop-filter: blur(6px);
 }
 
 .card:hover{
-  transform:scale(1.05);
-  box-shadow:0 0 22px rgba(0,255,255,0.7);
+  transform:scale(1.07);
+  box-shadow:
+    0 0 25px rgba(0,255,255,0.45),
+    0 10px 40px rgba(0,0,0,0.5);
 }
 
 .overlay{
   position:absolute;
   inset:0;
-  background:rgba(0,0,0,0.45);
+  background:linear-gradient(to top,rgba(0,0,0,0.6),transparent);
 }
 
 .card h2{
@@ -111,11 +110,11 @@ iframe{
   border:none;
 }
 
-/* LOADING */
+/* LOADING (🔄 FIXED ROTATION) */
 #loading{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,0.9);
+  background:rgba(0,0,0,0.92);
   display:none;
   flex-direction:column;
   justify-content:center;
@@ -129,6 +128,12 @@ iframe{
   border:6px solid #222;
   border-top:6px solid #00ffcc;
   border-radius:50%;
+  animation:spin 1s linear infinite; /* 🔥 FIX */
+}
+
+@keyframes spin{
+  from{transform:rotate(0deg);}
+  to{transform:rotate(360deg);}
 }
 
 #loadingText{
@@ -147,41 +152,35 @@ iframe{
 
 <div class="hub">
 
-  <div class="card" id="game1"
-    style="background-image:url(logochess.png)"
+  <div class="card" style="background-image:url(logochess.png)"
     onclick="openGame('game1.html','Chess','chess')">
     <div class="overlay"></div>
     <h2>♟ Chess</h2>
     <div class="stats" id="chessStats"></div>
   </div>
 
-  <div class="card" id="game2"
-    style="background-image:url(logocheckers.png)"
+  <div class="card" style="background-image:url(logocheckers.png)"
     onclick="openGame('game2.html','Checkers','checkers')">
     <div class="overlay"></div>
     <h2>⚫ Checkers</h2>
     <div class="stats" id="checkersStats"></div>
   </div>
 
-  <div class="card" id="game3"
-    style="background-image:url(logocrosssum.png)"
+  <div class="card" style="background-image:url(logocrosssum.png)"
     onclick="openGame('game3.html','Cross Sums','cross')">
     <div class="overlay"></div>
     <h2>🧠 Cross Sums</h2>
     <div class="stats" id="crossStats"></div>
   </div>
 
-  <div class="card" id="game4"
-    style="background-image:url(fruit.png)"
+  <div class="card" style="background-image:url(fruit.png)"
     onclick="openGame('fruit.html','Fruit Clicker','fruit')">
     <div class="overlay"></div>
     <h2>🍓 Fruit Clicker</h2>
     <div class="stats" id="fruitStats"></div>
   </div>
 
-  <!-- 🃏 UNO ADDED -->
-  <div class="card" id="game5"
-    style="background-image:url(unologo.png)"
+  <div class="card" style="background-image:url(unologo.png)"
     onclick="openGame('uno.html','UNO Deluxe','uno')">
     <div class="overlay"></div>
     <h2>🃏 UNO Deluxe</h2>
@@ -216,8 +215,10 @@ let stats = JSON.parse(localStorage.getItem("gameStats")) || {
 };
 
 let timer=null;
+let activeKey=null;
 
 function updateUI(){
+
   document.getElementById("chessStats").innerText=`⏱ ${stats.chess.time}s`;
   document.getElementById("checkersStats").innerText=`⏱ ${stats.checkers.time}s`;
   document.getElementById("crossStats").innerText=`⏱ ${stats.cross.time}s`;
@@ -242,12 +243,14 @@ function openGame(file,title,key){
     document.getElementById("frame").src=file;
     document.getElementById("title").innerText=title;
 
+    activeKey = key; // 🔥 FIX UNO + all games tracking
+
     timer=setInterval(()=>{
-      stats[key].time++;
+      stats[activeKey].time++;
       updateUI();
     },1000);
 
-  },900);
+  },800);
 }
 
 function closeGame(){
@@ -258,6 +261,8 @@ function closeGame(){
   document.querySelector("header").style.display="block";
 
   document.getElementById("frame").src="";
+  activeKey=null;
+
   updateUI();
 }
 
