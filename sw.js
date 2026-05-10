@@ -1,4 +1,4 @@
-const CACHE_NAME = "gamehub-v0.0.0.9";
+const CACHE_NAME = "gamehub-v3.0.9.";
 
 const ASSETS = [
   "./",
