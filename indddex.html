@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNO Deluxe Ultimate</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    user-select:none;
+}
+
+body{
+    overflow:hidden;
+    font-family:Arial, Helvetica, sans-serif;
+    background:
+    radial-gradient(circle at top,#4f67ff 0%,#111 70%);
+    color:white;
+}
+
+#game{
+    width:100vw;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+}
+
+.topBar{
+    height:80px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 20px;
+    background:rgba(0,0,0,0.3);
+    backdrop-filter:blur(8px);
+}
+
+.info{
+    font-size:22px;
+    font-weight:bold;
+}
+
+.center{
+    flex:1;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:60px;
+    position:relative;
+}
+
+.playerArea,
+.botArea{
+    display:flex;
+    gap:12px;
+    overflow-x:auto;
+    justify-content:center;
+    padding:12px;
+}
+
+.botArea{
+    height:180px;
+}
+
+.playerArea{
+    height:240px;
+    align-items:flex-end;
+}
+
+.card{
+    width:100px;
+    height:150px;
+    border-radius:22px;
+    border:4px solid rgba(255,255,255,0.9);
+    flex-shrink:0;
+    position:relative;
+    overflow:hidden;
+    transition:0.2s;
+    box-shadow:
+    0 10px 20px rgba(0,0,0,0.45),
+    inset 0 0 20px rgba(255,255,255,0.08);
+}
+
+.card::before{
+    content:"";
+    position:absolute;
+    width:170%;
+    height:170%;
+    background:rgba(255,255,255,0.12);
+    transform:rotate(35deg);
+    top:-90%;
+    left:-30%;
+}
+
+.playerCard{
+    cursor:pointer;
+}
+
+.playerCard:hover{
+    transform:translateY(-15px) scale(1.05);
+}
+
+.cardInner{
+    position:absolute;
+    inset:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:28px;
+    font-weight:bold;
+    text-shadow:0 2px 4px rgba(0,0,0,0.5);
+    white-space:nowrap;
+}
+
+.red{
+    background:linear-gradient(145deg,#ff4b4b,#a50000);
+}
+
+.blue{
+    background:linear-gradient(145deg,#57a8ff,#004ec7);
+}
+
+.green{
+    background:linear-gradient(145deg,#5dff99,#008a3f);
+}
+
+.yellow{
+    background:linear-gradient(145deg,#ffe66d,#e7ab00);
+    color:black;
+}
+
+.black{
+    background:
+    linear-gradient(
+    135deg,
+    red 0%,
+    yellow 25%,
+    green 50%,
+    blue 75%
+    );
+}
+
+.back{
+    background:
+    repeating-linear-gradient(
+    45deg,
+    #111,
+    #111 10px,
+    #222 10px,
+    #222 20px
+    );
+}
+
+.middleCard{
+    width:120px;
+    height:170px;
+}
+
+.deck{
+    width:110px;
+    height:160px;
+    border-radius:22px;
+    border:4px solid white;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:25px;
+    font-weight:bold;
+    cursor:pointer;
+    background:
+    repeating-linear-gradient(
+    45deg,
+    #111,
+    #111 10px,
+    #222 10px,
+    #222 20px
+    );
+}
+
+.deck:hover{
+    transform:scale(1.05);
+}
+
+.glow{
+    box-shadow:
+    0 0 20px white,
+    0 0 45px rgba(255,255,255,0.7);
+}
+
+.message{
+    position:absolute;
+    top:20px;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(0,0,0,0.7);
+    padding:14px 24px;
+    border-radius:14px;
+    font-size:22px;
+    font-weight:bold;
+    opacity:0;
+    transition:0.25s;
+    pointer-events:none;
+}
+
+.show{
+    opacity:1;
+}
+
+button{
+    border:none;
+    padding:12px 18px;
+    border-radius:14px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+#unoButton{
+    position:absolute;
+    right:20px;
+    bottom:250px;
+    background:#ffcc00;
+    color:black;
+    font-size:28px;
+    padding:16px 26px;
+    display:none;
+    box-shadow:0 0 20px rgba(255,204,0,0.7);
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:999;
+}
+
+.modalBox{
+    width:350px;
+    background:#222;
+    padding:30px;
+    border-radius:24px;
+    text-align:center;
+}
+
+.modalBox h1{
+    margin-bottom:10px;
+}
+
+.modalBox button{
+    width:100%;
+    margin-top:18px;
+}
+
+.colorPicker{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+    margin-top:20px;
+}
+
+.colorBtn{
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    border:4px solid white;
+    cursor:pointer;
+}
+
+.colorBtn:hover{
+    transform:scale(1.1);
+}
+
+.redBtn{background:red;}
+.blueBtn{background:blue;}
+.greenBtn{background:green;}
+.yellowBtn{background:gold;}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+    <div class="topBar">
+        <div class="info" id="playerInfo"></div>
+
+        <button onclick="restartGame()">Restart</button>
+
+        <div class="info" id="botInfo"></div>
+    </div>
+
+    <div class="botArea" id="botArea"></div>
+
+    <div class="center">
+
+        <div class="message" id="message"></div>
+
+        <div class="deck" id="drawPile">
+            DRAW
+        </div>
+
+        <div id="middleCard"></div>
+
+    </div>
+
+    <button id="unoButton">UNO!</button>
+
+    <div class="playerArea" id="playerArea"></div>
+
+</div>
+
+<div class="modal" id="winModal">
+    <div class="modalBox">
+        <h1 id="winText"></h1>
+        <p id="winSub"></p>
+        <button onclick="restartGame()">Play Again</button>
+    </div>
+</div>
+
+<div class="modal" id="colorModal">
+    <div class="modalBox">
+        <h1>Choose Color</h1>
+
+        <div class="colorPicker">
+
+            <div class="colorBtn redBtn"
+            onclick="chooseWildColor('red')"></div>
+
+            <div class="colorBtn blueBtn"
+            onclick="chooseWildColor('blue')"></div>
+
+            <div class="colorBtn greenBtn"
+            onclick="chooseWildColor('green')"></div>
+
+            <div class="colorBtn yellowBtn"
+            onclick="chooseWildColor('yellow')"></div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+const colors = ["red","blue","green","yellow"];
+const specials = ["+2","SKIP","REV"];
+
+let deck = [];
+let playerHand = [];
+let botHand = [];
+
+let middleCard;
+let currentColor;
+
+let playerTurn = true;
+let drawStack = 0;
+
+let pendingWild = null;
+
+let unoTimer = null;
+let unoPressed = false;
+
+function createDeck(){
+
+    deck = [];
+
+    for(let color of colors){
+
+        for(let i=0;i<=9;i++){
+
+            deck.push({
+                color:color,
+                value:String(i)
+            });
+
+            if(i !== 0){
+
+                deck.push({
+                    color:color,
+                    value:String(i)
+                });
+            }
+        }
+
+        for(let special of specials){
+
+            for(let i=0;i<2;i++){
+
+                deck.push({
+                    color:color,
+                    value:special
+                });
+            }
+        }
+    }
+
+    for(let i=0;i<4;i++){
+
+        deck.push({
+            color:"black",
+            value:"WILD"
+        });
+
+        deck.push({
+            color:"black",
+            value:"+4"
+        });
+    }
+
+    shuffle(deck);
+}
+
+function shuffle(arr){
+
+    for(let i=arr.length-1;i>0;i--){
+
+        const j = Math.floor(Math.random()*(i+1));
+
+        [arr[i],arr[j]] = [arr[j],arr[i]];
+    }
+}
+
+function drawCard(hand,count=1){
+
+    for(let i=0;i<count;i++){
+
+        if(deck.length===0){
+            createDeck();
+        }
+
+        hand.push(deck.pop());
+    }
+}
+
+function canPlay(card){
+
+    if(card.color === "black"){
+        return true;
+    }
+
+    if(card.color === currentColor){
+        return true;
+    }
+
+    if(card.value === middleCard.value){
+        return true;
+    }
+
+    return false;
+}
+
+function makeCard(card,extra=""){
+
+    return `
+    <div class="card ${card.color} ${extra}">
+        <div class="cardInner">${card.value}</div>
+    </div>
+    `;
+}
+
+function render(){
+
+    const playerArea =
+    document.getElementById("playerArea");
+
+    const botArea =
+    document.getElementById("botArea");
+
+    playerArea.innerHTML = "";
+    botArea.innerHTML = "";
+
+    playerHand.forEach((card,index)=>{
+
+        const wrapper =
+        document.createElement("div");
+
+        wrapper.innerHTML = makeCard(
+            card,
+            canPlay(card)
+            ? "playerCard glow"
+            : "playerCard"
+        );
+
+        const element =
+        wrapper.firstElementChild;
+
+        element.onclick = ()=>{
+
+            if(playerTurn){
+                playPlayerCard(index);
+            }
+        };
+
+        playerArea.appendChild(element);
+    });
+
+    botHand.forEach(()=>{
+
+        const wrapper =
+        document.createElement("div");
+
+        wrapper.innerHTML = `
+        <div class="card back">
+            <div class="cardInner">🂠</div>
+        </div>
+        `;
+
+        botArea.appendChild(wrapper.firstElementChild);
+    });
+
+    document.getElementById("middleCard").innerHTML =
+    makeCard(middleCard,"middleCard");
+
+    document.getElementById("playerInfo").innerHTML =
+    `🧍 You: ${playerHand.length}`;
+
+    document.getElementById("botInfo").innerHTML =
+    `🤖 Bot: ${botHand.length}`;
+}
+
+function playPlayerCard(index){
+
+    const card = playerHand[index];
+
+    if(!canPlay(card)) return;
+
+    // WILD MODAL
+    if(card.color === "black"){
+
+        pendingWild = {
+            index:index,
+            card:card
+        };
+
+        document.getElementById("colorModal")
+        .style.display = "flex";
+
+        return;
+    }
+
+    playerHand.splice(index,1);
+
+    applyCard(card,false);
+
+    afterPlayerMove();
+}
+
+function chooseWildColor(color){
+
+    document.getElementById("colorModal")
+    .style.display = "none";
+
+    currentColor = color;
+
+    const card = pendingWild.card;
+
+    playerHand.splice(pendingWild.index,1);
+
+    applyCard(card,false,true);
+
+    showMessage(
+    `🧍 You changed color to ${color.toUpperCase()}`
+    );
+
+    pendingWild = null;
+
+    afterPlayerMove();
+}
+
+function afterPlayerMove(){
+
+    render();
+
+    checkUNOPlayer();
+
+    if(checkWin()) return;
+
+    playerTurn = false;
+
+    setTimeout(botTurn,900);
+}
+
+function applyCard(card,isBot,keepColor=false){
+
+    middleCard = {
+        color:card.color,
+        value:card.value
+    };
+
+    if(!keepColor){
+
+        if(card.color === "black"){
+
+            currentColor =
+            colors[Math.floor(Math.random()*colors.length)];
+
+            showMessage(
+            `${isBot ? "🤖 Bot" : "🧍 You"} changed color to ${currentColor.toUpperCase()}`
+            );
+
+        }else{
+
+            currentColor = card.color;
+        }
+    }
+
+    if(card.value === "+2"){
+        drawStack += 2;
+    }
+
+    if(card.value === "+4"){
+        drawStack += 4;
+    }
+}
+
+function botTurn(){
+
+    if(drawStack > 0){
+
+        drawCard(botHand,drawStack);
+
+        showMessage(`🤖 Bot drew ${drawStack}`);
+
+        drawStack = 0;
+
+        render();
+
+        playerTurn = true;
+
+        return;
+    }
+
+    let playableIndex =
+    botHand.findIndex(card => canPlay(card));
+
+    if(playableIndex !== -1){
+
+        const card = botHand[playableIndex];
+
+        botHand.splice(playableIndex,1);
+
+        if(card.color === "black"){
+
+            currentColor =
+            colors[Math.floor(Math.random()*colors.length)];
+
+            showMessage(
+            `🤖 Bot changed color to ${currentColor.toUpperCase()}`
+            );
+        }
+
+        applyCard(card,true,true);
+
+        showMessage(`🤖 Bot played ${card.value}`);
+
+    }else{
+
+        drawCard(botHand,1);
+
+        showMessage("🤖 Bot draws");
+    }
+
+    render();
+
+    if(botHand.length === 1){
+
+        showMessage("🤖 BOT SAID UNO!");
+    }
+
+    if(checkWin()) return;
+
+    playerTurn = true;
+}
+
+document.getElementById("drawPile").onclick = ()=>{
+
+    if(!playerTurn) return;
+
+    if(drawStack > 0){
+
+        drawCard(playerHand,drawStack);
+
+        showMessage(`You drew ${drawStack}`);
+
+        drawStack = 0;
+
+    }else{
+
+        drawCard(playerHand,1);
+
+        showMessage("You drew 1");
+    }
+
+    render();
+
+    playerTurn = false;
+
+    setTimeout(botTurn,900);
+};
+
+function checkUNOPlayer(){
+
+    clearTimeout(unoTimer);
+
+    if(playerHand.length === 1){
+
+        unoPressed = false;
+
+        const btn =
+        document.getElementById("unoButton");
+
+        btn.style.display = "block";
+
+        unoTimer = setTimeout(()=>{
+
+            if(!unoPressed){
+
+                drawCard(playerHand,1);
+
+                render();
+
+                showMessage("❌ Forgot UNO! +1");
+            }
+
+            btn.style.display = "none";
+
+        },3000);
+
+    }else{
+
+        document.getElementById("unoButton")
+        .style.display = "none";
+    }
+}
+
+document.getElementById("unoButton").onclick = ()=>{
+
+    unoPressed = true;
+
+    clearTimeout(unoTimer);
+
+    document.getElementById("unoButton")
+    .style.display = "none";
+
+    showMessage("🔥 UNO!");
+};
+
+function checkWin(){
+
+    if(playerHand.length === 0){
+
+        openModal(
+        "🎉 YOU WIN!",
+        "You defeated the bot!"
+        );
+
+        return true;
+    }
+
+    if(botHand.length === 0){
+
+        openModal(
+        "🤖 BOT WINS!",
+        "Better luck next round!"
+        );
+
+        return true;
+    }
+
+    return false;
+}
+
+function openModal(title,sub){
+
+    document.getElementById("winText")
+    .innerHTML = title;
+
+    document.getElementById("winSub")
+    .innerHTML = sub;
+
+    document.getElementById("winModal")
+    .style.display = "flex";
+}
+
+function showMessage(text){
+
+    const msg =
+    document.getElementById("message");
+
+    msg.innerHTML = text;
+
+    msg.classList.add("show");
+
+    clearTimeout(msg.timer);
+
+    msg.timer = setTimeout(()=>{
+
+        msg.classList.remove("show");
+
+    },1800);
+}
+
+function restartGame(){
+
+    document.getElementById("winModal")
+    .style.display = "none";
+
+    createDeck();
+
+    playerHand = [];
+    botHand = [];
+
+    drawCard(playerHand,7);
+    drawCard(botHand,7);
+
+    middleCard = deck.pop();
+
+    while(middleCard.color === "black"){
+
+        middleCard = deck.pop();
+    }
+
+    currentColor = middleCard.color;
+
+    playerTurn = true;
+
+    drawStack = 0;
+
+    render();
+}
+
+restartGame();
+</script>
+
+</body>
+</html>
