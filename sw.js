@@ -1,4 +1,4 @@
-const CACHE_NAME = "gamehub-v3.5.9.";
+const CACHE_NAME = "gamehub-v1.5.9.";
 
 const ASSETS = [
   "./",
@@ -13,7 +13,7 @@ const ASSETS = [
   "./logocrosssum.png",
   "./fruit.png",
   "./unologo.png",
-  "./uno.html
+  "./uno.html"
   
 ];
 
