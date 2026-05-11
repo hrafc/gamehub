@@ -2,269 +2,535 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>🎮 Game Hub</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>🎮 GAME HUB</title>
 
 <style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,Helvetica,sans-serif;
+}
+
 body{
-  margin:0;
-  font-family:Arial;
-  color:white;
-  background:radial-gradient(circle at top,#0f172a,#0b0f1a);
-  overflow:hidden;
+    background:#0b1020;
+    color:white;
+    overflow:hidden;
+}
+
+/* BACKGROUND */
+
+.bg{
+    position:fixed;
+    inset:0;
+    background:
+    radial-gradient(circle at top left,#16345f 0%,transparent 35%),
+    radial-gradient(circle at bottom right,#0d5f53 0%,transparent 35%),
+    linear-gradient(135deg,#0b1020,#0f172a);
+    z-index:-1;
 }
 
 /* HEADER */
+
 header{
-  text-align:center;
-  padding:20px;
+    text-align:center;
+    padding:25px;
 }
 
-/* HUB LAYOUT */
-.hub{
-  display:grid;
-  grid-template-columns:220px 220px 220px;
-  grid-template-areas:
-    "g1 g2 g3"
-    "g4 g5 . ";
-  gap:20px;
-  justify-content:center;
-  padding:40px;
+header h1{
+    font-size:55px;
+    text-shadow:0 0 20px #00ffe5;
 }
 
-/* CARDS (✨ improved graphics only) */
+header p{
+    margin-top:10px;
+    opacity:0.8;
+}
+
+/* MUSIC BUTTON */
+
+#musicBtn{
+    position:fixed;
+    top:20px;
+    right:20px;
+    width:55px;
+    height:55px;
+    border:none;
+    border-radius:50%;
+    background:#00ffd0;
+    color:black;
+    font-size:22px;
+    cursor:pointer;
+    z-index:100;
+    box-shadow:0 0 20px rgba(0,255,200,0.7);
+}
+
+/* GAMES GRID */
+
+.gamesGrid{
+    width:100%;
+    height:calc(100vh - 130px);
+    overflow-y:auto;
+
+    display:grid;
+    grid-template-columns:repeat(3,260px);
+    justify-content:center;
+
+    gap:28px;
+    padding:20px 40px 120px;
+}
+
+/* GAME CARD */
+
 .card{
-  width:220px;
-  height:200px;
-  border-radius:18px;
-  position:relative;
-  background-size:cover;
-  background-position:center;
-  cursor:pointer;
-  overflow:hidden;
-  transition:0.25s ease;
+    width:260px;
+    height:200px;
 
-  border:1px solid rgba(0,255,255,0.25);
-  box-shadow:
-    0 0 12px rgba(0,255,255,0.15),
-    inset 0 0 30px rgba(255,255,255,0.03);
-  backdrop-filter: blur(6px);
+    position:relative;
+    overflow:hidden;
+
+    border-radius:22px;
+
+    background-size:cover;
+    background-position:center;
+
+    cursor:pointer;
+
+    transition:0.25s;
+
+    border:2px solid rgba(0,255,200,0.4);
+
+    box-shadow:
+    0 0 20px rgba(0,255,200,0.2);
 }
 
 .card:hover{
-  transform:scale(1.07);
-  box-shadow:
-    0 0 25px rgba(0,255,255,0.45),
-    0 10px 40px rgba(0,0,0,0.5);
+    transform:translateY(-8px) scale(1.03);
+
+    box-shadow:
+    0 0 35px rgba(0,255,200,0.7);
 }
+
+/* OVERLAY */
 
 .overlay{
-  position:absolute;
-  inset:0;
-  background:linear-gradient(to top,rgba(0,0,0,0.6),transparent);
+    position:absolute;
+    inset:0;
+    background:linear-gradient(
+    to top,
+    rgba(0,0,0,0.85),
+    rgba(0,0,0,0.1)
+    );
 }
 
-.card h2{
-  position:absolute;
-  bottom:10px;
-  left:10px;
-  margin:0;
-  font-size:16px;
+/* BOTTOM */
+
+.cardBottom{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+
+    padding:15px;
+
+    z-index:2;
+}
+
+.cardBottom h2{
+    font-size:24px;
+    margin-bottom:6px;
 }
 
 .stats{
-  position:absolute;
-  bottom:30px;
-  left:10px;
-  font-size:12px;
-  color:#9ffcff;
+    font-size:14px;
+    opacity:0.9;
+    color:#99ffee;
 }
 
-/* GAME SCREEN */
-#gameScreen{
-  position:fixed;
-  inset:0;
-  background:black;
-  display:none;
-  flex-direction:column;
-}
+/* LOADING */
 
-#topbar{
-  background:#111;
-  padding:10px;
-  display:flex;
-  justify-content:space-between;
-}
-
-button{
-  padding:8px 14px;
-  border:none;
-  border-radius:8px;
-  cursor:pointer;
-  background:#00ffcc;
-  font-weight:bold;
-}
-
-iframe{
-  width:100%;
-  height:100%;
-  border:none;
-}
-
-/* LOADING (🔄 FIXED ROTATION) */
 #loading{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.92);
-  display:none;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  z-index:999;
+    position:fixed;
+    inset:0;
+
+    background:black;
+
+    display:none;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
+    z-index:999;
 }
 
 .loader{
-  width:70px;
-  height:70px;
-  border:6px solid #222;
-  border-top:6px solid #00ffcc;
-  border-radius:50%;
-  animation:spin 1s linear infinite; /* 🔥 FIX */
+    width:85px;
+    height:85px;
+
+    border-radius:50%;
+
+    border:8px solid #222;
+    border-top:8px solid #00ffd0;
+
+    animation:spin 1s linear infinite;
 }
 
 @keyframes spin{
-  from{transform:rotate(0deg);}
-  to{transform:rotate(360deg);}
+    100%{
+        transform:rotate(360deg);
+    }
 }
 
 #loadingText{
-  margin-top:12px;
-  color:#00ffcc;
+    margin-top:20px;
+    font-size:22px;
+    color:#00ffd0;
 }
+
+/* GAME SCREEN */
+
+#gameScreen{
+    position:fixed;
+    inset:0;
+
+    background:black;
+
+    display:none;
+    flex-direction:column;
+
+    z-index:500;
+}
+
+#topbar{
+    height:70px;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    padding:0 20px;
+
+    background:#101010;
+}
+
+#title{
+    font-size:26px;
+    font-weight:bold;
+}
+
+#backBtn{
+    border:none;
+    padding:12px 18px;
+    border-radius:12px;
+    background:#00ffd0;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+iframe{
+    flex:1;
+    border:none;
+    background:black;
+}
+
+/* MOBILE */
+
+@media(max-width:900px){
+
+.gamesGrid{
+    grid-template-columns:1fr;
+    justify-items:center;
+}
+
+}
+
 </style>
 </head>
 
 <body>
 
+<div class="bg"></div>
+
+<!-- MUSIC -->
+<audio id="bgMusic" loop>
+    <source src="elevator.mp3" type="audio/mpeg">
+</audio>
+
+<button id="musicBtn">🎵</button>
+
+<!-- HEADER -->
+
 <header>
-  <h1>🎮 GAME HUB</h1>
-  <p>Choose your game</p>
+    <h1>🎮 GAME HUB</h1>
+    <p>Select your game and chill ✨</p>
 </header>
 
-<div class="hub">
+<!-- GAMES -->
 
-  <div class="card" style="background-image:url(logochess.png)"
+<div class="gamesGrid">
+
+    <!-- CHESS -->
+    <div class="card"
+    style="background-image:url(logochess.png)"
     onclick="openGame('game1.html','Chess','chess')">
-    <div class="overlay"></div>
-    <h2>♟ Chess</h2>
-    <div class="stats" id="chessStats"></div>
-  </div>
 
-  <div class="card" style="background-image:url(logocheckers.png)"
+        <div class="overlay"></div>
+
+        <div class="cardBottom">
+            <h2>♟ Chess</h2>
+            <div class="stats" id="chessStats">⏱ 0s</div>
+        </div>
+
+    </div>
+
+    <!-- CHECKERS -->
+    <div class="card"
+    style="background-image:url(logocheckers.png)"
     onclick="openGame('game2.html','Checkers','checkers')">
-    <div class="overlay"></div>
-    <h2>⚫ Checkers</h2>
-    <div class="stats" id="checkersStats"></div>
-  </div>
 
-  <div class="card" style="background-image:url(logocrosssum.png)"
+        <div class="overlay"></div>
+
+        <div class="cardBottom">
+            <h2>⚫ Checkers</h2>
+            <div class="stats" id="checkersStats">⏱ 0s</div>
+        </div>
+
+    </div>
+
+    <!-- CROSS SUM -->
+    <div class="card"
+    style="background-image:url(logocrosssum.png)"
     onclick="openGame('game3.html','Cross Sums','cross')">
-    <div class="overlay"></div>
-    <h2>🧠 Cross Sums</h2>
-    <div class="stats" id="crossStats"></div>
-  </div>
 
-  <div class="card" style="background-image:url(fruit.png)"
-    onclick="openGame('fruit.html','Fruit Clicker','fruit')">
-    <div class="overlay"></div>
-    <h2>🍓 Fruit Clicker</h2>
-    <div class="stats" id="fruitStats"></div>
-  </div>
+        <div class="overlay"></div>
 
-  <div class="card" style="background-image:url(unologo.png)"
+        <div class="cardBottom">
+            <h2>🧠 Cross Sums</h2>
+            <div class="stats" id="crossStats">⏱ 0s</div>
+        </div>
+
+    </div>
+
+    <!-- FRUIT -->
+    <div class="card"
+    style="background-image:url(logofruit.png)"
+    onclick="openGame('fruitclicker.html','Fruit Clicker','fruit')">
+
+        <div class="overlay"></div>
+
+        <div class="cardBottom">
+            <h2>🌸 Fruit Clicker</h2>
+            <div class="stats" id="fruitStats">⏱ 0s</div>
+        </div>
+
+    </div>
+
+    <!-- UNO -->
+    <div class="card"
+    style="background-image:url(logouno.png)"
     onclick="openGame('uno.html','UNO Deluxe','uno')">
-    <div class="overlay"></div>
-    <h2>🃏 UNO Deluxe</h2>
-    <div class="stats" id="unoStats"></div>
-  </div>
+
+        <div class="overlay"></div>
+
+        <div class="cardBottom">
+            <h2>🃏 UNO Deluxe</h2>
+            <div class="stats" id="unoStats">⏱ 0s</div>
+        </div>
+
+    </div>
 
 </div>
 
 <!-- LOADING -->
+
 <div id="loading">
-  <div class="loader"></div>
-  <div id="loadingText">Loading game...</div>
+
+    <div class="loader"></div>
+
+    <div id="loadingText">
+        Loading...
+    </div>
+
 </div>
 
-<!-- GAME -->
+<!-- GAME SCREEN -->
+
 <div id="gameScreen">
-  <div id="topbar">
-    <span id="title">Game</span>
-    <button onclick="closeGame()">⬅ Back</button>
-  </div>
-  <iframe id="frame"></iframe>
+
+    <div id="topbar">
+
+        <div id="title">
+            Game
+        </div>
+
+        <button id="backBtn"
+        onclick="closeGame()">
+        ⬅ Back
+        </button>
+
+    </div>
+
+    <iframe id="frame"></iframe>
+
 </div>
 
 <script>
 
-let stats = JSON.parse(localStorage.getItem("gameStats")) || {
-  chess:{time:0},
-  checkers:{time:0},
-  cross:{time:0},
-  fruit:{time:0},
-  uno:{time:0}
+/* MUSIC */
+
+const music =
+document.getElementById("bgMusic");
+
+const musicBtn =
+document.getElementById("musicBtn");
+
+let playing = false;
+
+musicBtn.onclick = ()=>{
+
+    if(playing){
+
+        music.pause();
+
+        musicBtn.innerHTML = "🔇";
+
+    }else{
+
+        music.play();
+
+        musicBtn.innerHTML = "🎵";
+    }
+
+    playing = !playing;
 };
 
-let timer=null;
-let activeKey=null;
+/* SAVE SYSTEM */
+
+let stats =
+JSON.parse(
+localStorage.getItem("gameStats")
+)
+||
+{
+    chess:{time:0},
+    checkers:{time:0},
+    cross:{time:0},
+    fruit:{time:0},
+    uno:{time:0}
+};
+
+let activeGame = null;
+let timer = null;
+
+/* UPDATE UI */
 
 function updateUI(){
 
-  document.getElementById("chessStats").innerText=`⏱ ${stats.chess.time}s`;
-  document.getElementById("checkersStats").innerText=`⏱ ${stats.checkers.time}s`;
-  document.getElementById("crossStats").innerText=`⏱ ${stats.cross.time}s`;
-  document.getElementById("fruitStats").innerText=`⏱ ${stats.fruit.time}s`;
-  document.getElementById("unoStats").innerText=`⏱ ${stats.uno.time}s`;
+    document.getElementById(
+    "chessStats"
+    ).innerText =
+    `⏱ ${stats.chess.time}s`;
 
-  localStorage.setItem("gameStats",JSON.stringify(stats));
+    document.getElementById(
+    "checkersStats"
+    ).innerText =
+    `⏱ ${stats.checkers.time}s`;
+
+    document.getElementById(
+    "crossStats"
+    ).innerText =
+    `⏱ ${stats.cross.time}s`;
+
+    document.getElementById(
+    "fruitStats"
+    ).innerText =
+    `⏱ ${stats.fruit.time}s`;
+
+    document.getElementById(
+    "unoStats"
+    ).innerText =
+    `⏱ ${stats.uno.time}s`;
+
+    localStorage.setItem(
+    "gameStats",
+    JSON.stringify(stats)
+    );
 }
+
+/* OPEN GAME */
 
 function openGame(file,title,key){
 
-  document.getElementById("loading").style.display="flex";
+    activeGame = key;
 
-  setTimeout(()=>{
+    document.getElementById(
+    "loading"
+    ).style.display = "flex";
 
-    document.getElementById("loading").style.display="none";
+    document.getElementById(
+    "loadingText"
+    ).innerText =
+    "Loading " + title + "...";
 
-    document.querySelector(".hub").style.display="none";
-    document.querySelector("header").style.display="none";
+    setTimeout(()=>{
 
-    document.getElementById("gameScreen").style.display="flex";
-    document.getElementById("frame").src=file;
-    document.getElementById("title").innerText=title;
+        document.getElementById(
+        "loading"
+        ).style.display = "none";
 
-    activeKey = key; // 🔥 FIX UNO + all games tracking
+        document.getElementById(
+        "gameScreen"
+        ).style.display = "flex";
 
-    timer=setInterval(()=>{
-      stats[activeKey].time++;
-      updateUI();
-    },1000);
+        document.getElementById(
+        "frame"
+        ).src = file;
 
-  },800);
+        document.getElementById(
+        "title"
+        ).innerText = title;
+
+        clearInterval(timer);
+
+        timer = setInterval(()=>{
+
+            if(activeGame){
+
+                stats[activeGame].time++;
+
+                updateUI();
+            }
+
+        },1000);
+
+    },1200);
 }
+
+/* CLOSE */
 
 function closeGame(){
-  clearInterval(timer);
 
-  document.getElementById("gameScreen").style.display="none";
-  document.querySelector(".hub").style.display="grid";
-  document.querySelector("header").style.display="block";
+    clearInterval(timer);
 
-  document.getElementById("frame").src="";
-  activeKey=null;
+    timer = null;
 
-  updateUI();
+    activeGame = null;
+
+    document.getElementById(
+    "gameScreen"
+    ).style.display = "none";
+
+    document.getElementById(
+    "frame"
+    ).src = "";
+
+    updateUI();
 }
+
+/* INIT */
 
 updateUI();
 
