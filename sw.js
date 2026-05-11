@@ -11,9 +11,9 @@ const ASSETS = [
   "./logochess.png",
   "./logocheckers.png",
   "./logocrosssum.png",
-  ",/fruit.png",
-  ",/unologo.png",
-  ",/uno.html
+  "./fruit.png",
+  "./unologo.png",
+  "./uno.html
   
 ];
 
