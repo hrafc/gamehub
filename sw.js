@@ -11,7 +11,10 @@ const ASSETS = [
   "./logochess.png",
   "./logocheckers.png",
   "./logocrosssum.png",
-  ",/fruit.png"
+  ",/fruit.png",
+  ",/unologo.png",
+  ",/uno.html
+  
 ];
 
 self.addEventListener("install", event => {
